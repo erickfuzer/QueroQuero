@@ -382,6 +382,13 @@
 
   let naTela = [];
 
+  // Igual ao latLngToContainerPoint do Leaflet, mas sem arredondar para o pixel:
+  // assim o avião anda frações de pixel por quadro e o movimento fica liso
+  function paraTela(lat, lon) {
+    const p = mapa.project([lat, lon]).subtract(mapa.getPixelOrigin());
+    return p.add(L.DomUtil.getPosition(mapa.getPane('mapPane')));
+  }
+
   function ajustarLon(lon, centroLon) {
     while (lon - centroLon > 180) lon -= 360;
     while (lon - centroLon < -180) lon += 360;
@@ -404,8 +411,8 @@
     let pSel = null;
     if (sel) {
       pSel = posicaoExibida(sel, agora);
-      const pontos = sel.rastro.map(([la, lo, alt, solo]) => ({ p: mapa.latLngToContainerPoint([la, ajustarLon(lo, centroLon)]), alt, solo }));
-      pontos.push({ p: mapa.latLngToContainerPoint([pSel.lat, ajustarLon(pSel.lon, centroLon)]), alt: sel.alt, solo: sel.solo });
+      const pontos = sel.rastro.map(([la, lo, alt, solo]) => ({ p: paraTela(la, ajustarLon(lo, centroLon)), alt, solo }));
+      pontos.push({ p: paraTela(pSel.lat, ajustarLon(pSel.lon, centroLon)), alt: sel.alt, solo: sel.solo });
       ctx.lineWidth = 3;
       ctx.lineCap = 'round';
       for (let i = 1; i < pontos.length; i++) {
@@ -430,7 +437,7 @@
   }
 
   function desenharAviao(av, pos, agora, centroLon, tam, destaque, rotulo) {
-    const p = mapa.latLngToContainerPoint([pos.lat, ajustarLon(pos.lon, centroLon)]);
+    const p = paraTela(pos.lat, ajustarLon(pos.lon, centroLon));
     if (p.x < -30 || p.y < -30 || p.x > tam.x + 30 || p.y > tam.y + 30) return;
     naTela.push({ hex: av.hex, x: p.x, y: p.y });
 
