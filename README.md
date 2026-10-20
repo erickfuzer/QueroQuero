@@ -72,24 +72,31 @@ Rastreador de voos em tempo real feito com **HTML, CSS e JavaScript puros**: avi
 
 **Online:** acesse **[erickfuzer.github.io/QueroQuero](https://erickfuzer.github.io/QueroQuero/)**.
 
-**No seu computador:** baixe o repositório pelo botão **Code → Download ZIP**, extraia e abra o `index.html` no navegador. Não precisa instalar nada.
-
-Se preferir usar o Git:
+**No seu computador:** baixe o repositório pelo botão **Code → Download ZIP** e extraia, ou use o Git:
 
 ```bash
 git clone https://github.com/erickfuzer/QueroQuero.git
 ```
 
-A versão online e a cópia aberta direto do `index.html` usam o proxy do projeto, então funcionam sem configurar nada.
+O código usa módulos JavaScript, que o navegador só carrega a partir de um endereço `http://`. Por isso, em vez de abrir o `index.html` direto, rode um servidor local na pasta do projeto (o Python já vem instalado no Linux e no macOS):
+
+```bash
+cd QueroQuero
+python3 -m http.server 8000
+```
+
+e acesse **http://localhost:8000**. Não precisa instalar mais nada nem compilar.
+
+A versão online e a cópia rodando em `localhost` usam o proxy do projeto, então funcionam sem configurar nada.
 
 ### Publicando o seu próprio proxy
 
-Só é preciso se você publicar a sua cópia em outro endereço (um fork no seu GitHub Pages, por exemplo), porque o proxy do projeto só atende o endereço oficial, `localhost` e o arquivo aberto do disco. É gratuito (100 mil requisições por dia) e leva uns 2 minutos:
+Só é preciso se você publicar a sua cópia em outro endereço (um fork no seu GitHub Pages, por exemplo), porque o proxy do projeto só atende o endereço oficial e o `localhost`. É gratuito (100 mil requisições por dia) e leva uns 2 minutos:
 
 1. Crie uma conta em [dash.cloudflare.com](https://dash.cloudflare.com) e escolha um subdomínio para o `workers.dev` (o nome é seu, por exemplo o seu usuário)
 2. Vá em **Workers & Pages → Create → Worker**, dê um nome (por exemplo `queroquero`) e clique em **Deploy**
 3. Clique em **Edit code**, cole o conteúdo de `proxy/worker.js`, acrescente o endereço do seu site em `ORIGENS` (por exemplo `'https://seu-usuario.github.io'`) e clique em **Deploy** de novo
-4. No início do `script.js`, troque `proxy` pelo endereço do seu Worker, que fica assim: `https://queroquero.seu-subdominio.workers.dev`
+4. Em `js/config.js`, troque `proxy` pelo endereço do seu Worker, que fica assim: `https://queroquero.seu-subdominio.workers.dev`
 
 Para testar um proxy sem mexer no código, passe o endereço pela URL: `index.html?proxy=https://queroquero.seu-subdominio.workers.dev`.
 
@@ -99,15 +106,29 @@ Sempre que o `proxy/worker.js` mudar no repositório, cole a versão nova no Wor
 
 ```
 QueroQuero/
-├── index.html        # estrutura da página, painel, filtros e legenda
-├── style.css         # temas claro e escuro, painel, folha inferior e versão mobile
-├── script.js         # mapa, dados, interpolação, ícones por tipo, painel, busca, filtros e tema
+├── index.html               # estrutura da página, navbar, painéis e popovers
+├── style.css                # temas claro e escuro, painéis, folha inferior e versão mobile
+├── js/                      # código em módulos ES, sem etapa de build
+│   ├── main.js              # ponto de entrada: monta a interface e começa a buscar os voos
+│   ├── config.js            # endereço do proxy, intervalos e limites
+│   ├── dados.js             # busca periódica no proxy, situação da conexão e alcance
+│   ├── estado.js            # aviões recebidos, interpolação e posição exibida
+│   ├── desenho.js           # canvas: aviões, rastros, aeroportos, clique e dica do mouse
+│   ├── aeronaves.js         # silhuetas, grupos e classificação por tipo
+│   ├── painel.js            # painel do voo: dados, foto, rota, seguir e compartilhar
+│   ├── painel-aeroporto.js  # painel do aeroporto: chegadas e partidas
+│   ├── rotas.js             # rotas do adsbdb, com cache no navegador
+│   ├── busca.js             # busca de voos e aeroportos
+│   ├── filtros.js           # filtros por tipo, situação, companhia e altitude
+│   ├── interface.js         # popovers, preferências, tema, camadas, relógio e atalhos
+│   ├── mapa.js              # mapa Leaflet e estilos de mapa base
+│   └── …                    # utilitários, cores, preferências, países, companhias e avisos
 ├── proxy/
-│   └── worker.js     # proxy para o Cloudflare Workers (CORS, fontes e cache)
+│   └── worker.js            # proxy para o Cloudflare Workers (CORS e fontes)
 ├── assets/
-│   ├── logo/         # rosto do quero-quero em SVG (colorido, claro e escuro) e o gerador
-│   ├── dados/        # aeroportos.json, extraído do OurAirports
-│   └── *.png         # prints do README e da prévia de link
+│   ├── logo/                # rosto do quero-quero em SVG (colorido, claro e escuro) e o gerador
+│   ├── dados/               # aeroportos.json, extraído do OurAirports
+│   └── *.png                # prints do README e da prévia de link
 ├── LICENSE
 └── README.md
 ```
