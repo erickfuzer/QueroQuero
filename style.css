@@ -157,11 +157,12 @@ svg .cheio { fill: currentColor; stroke: none; }
   color: inherit;
   text-decoration: none;
 }
-.logo { width: 30px; height: 30px; }
+.logo { width: 32px; height: 32px; }
 .navbar .logo { stroke: none; }
-.logo-corpo { fill: var(--texto); }
-.logo-pernas { fill: none; stroke: var(--texto); stroke-width: 2.4; stroke-linecap: round; }
+.logo-silhueta { fill: var(--texto); }
 .logo-olho { fill: var(--destaque); }
+.logo-iris { fill: color-mix(in srgb, var(--destaque) 78%, #000); }
+.logo-pupila { fill: #17191d; }
 .marca-nome { font-size: 16px; font-weight: 600; letter-spacing: -0.1px; white-space: nowrap; }
 
 .busca {

@@ -95,7 +95,9 @@ QueroQuero/
 ├── script.js         # mapa, dados, interpolação, ícones por tipo, painel, busca, filtros e tema
 ├── proxy/
 │   └── worker.js     # proxy para o Cloudflare Workers (CORS, fontes e cache)
-├── assets/           # prints do README e da prévia de link
+├── assets/
+│   ├── logo/         # rosto do quero-quero em SVG (colorido, claro e escuro) e o gerador
+│   └── *.png         # prints do README e da prévia de link
 ├── LICENSE
 └── README.md
 ```
@@ -105,6 +107,7 @@ QueroQuero/
 - Dados de voo: [adsb.fi](https://adsb.fi), com [airplanes.live](https://airplanes.live) e [adsb.lol](https://adsb.lol) como reserva, todos mantidos por redes de receptores voluntários
 - Rotas e companhias: [adsbdb](https://www.adsbdb.com)
 - Fotos das aeronaves: [Planespotters.net](https://www.planespotters.net), com o crédito de cada fotógrafo no painel
+- Logotipo: rosto do quero-quero desenhado para o projeto a partir de uma foto de referência
 - Mapa interativo: [Leaflet](https://leafletjs.com)
 - Mapas base: Esri World Dark Gray Canvas e World Light Gray Canvas ([Esri](https://www.esri.com), HERE, Garmin, © [colaboradores do OpenStreetMap](https://www.openstreetmap.org/copyright) e comunidade de usuários de SIG)
 

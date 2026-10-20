@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="qq-titulo-colorido qq-desc-colorido">
+  <title id="qq-titulo-colorido">Quero-quero</title>
+  <desc id="qq-desc-colorido">Rosto do quero-quero de perfil, colorido: cabeça cinza-areia, penacho preto, máscara preta na testa e na garganta contornada de branco, bico rosado de ponta preta, olho vermelho e o ombro bronzeado da asa.</desc>
+  <defs>
+    <clipPath id="qq-corpo-colorido"><path d="M131 180.4 L131 144.4 C131.4 126.4 140 109.8 154.4 99 C168.8 89 190.4 86.8 215.6 86.8 C244.4 86.8 276.8 89.7 305.6 96.2 C327.2 101.2 345.2 110.6 353.8 124.2 C360.3 135.8 362.5 151.6 363.2 173.2 C365 234.4 368.6 295.6 377.6 338.8 C386.6 371.2 413.6 396.4 453.2 421.6 C474.8 436 492.8 448.6 507.2 459.4 C438.8 504.4 316.4 517 203.4 508 C203.4 450.4 204.8 378.4 204.8 335.2 C204.8 310 201.2 297 192.6 288.4 C172.4 272.6 138.6 258.2 117 238 L125.6 209.2 Z"/></clipPath>
+    <clipPath id="qq-bico-colorido"><path d="M159.4 185.4 C148.6 184 139.3 184.7 129.2 186.2 C99 191.2 64.4 213.5 32 246.6 C27.7 251 29.1 257.4 34.9 256.7 C59.4 253.1 93.2 240.2 125.6 227.9 C138.6 223.6 149.4 221.4 159.4 220 C163 212.1 163.8 192.6 159.4 185.4 Z"/></clipPath>
+    <linearGradient id="qq-pele-colorido" x1="0" y1="0" x2=".6" y2="1">
+      <stop offset="0" stop-color="#c9c2b6"/>
+      <stop offset=".42" stop-color="#cbb698"/>
+      <stop offset="1" stop-color="#b59a76"/>
+    </linearGradient>
+    <radialGradient id="qq-iris-colorido" cx=".42" cy=".62" r=".62">
+      <stop offset="0" stop-color="#f26b4e"/>
+      <stop offset="1" stop-color="#b81d29"/>
+    </radialGradient>
+    <linearGradient id="qq-ombro-colorido" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e08a35"/>
+      <stop offset="1" stop-color="#b5601f"/>
+    </linearGradient>
+  </defs>
+  <!-- Penacho da nuca -->
+  <g fill="#1d1b19"><path d="M303.1 108.4 C353.1 95.8 422.2 76 480.6 22.7 A0.8 0.8 0 0 1 479.8 21.3 C419.4 73.1 351.7 87.9 300.9 98.3 Z"/><path d="M310.3 105.2 C349.5 92.6 389.1 78.9 428.4 53 A0.6 0.6 0 0 1 427.6 51.5 C387.7 76 348.1 86.8 308.1 97.2 Z"/><path d="M309.2 103 C319.6 92.2 327.9 79.6 335.1 63.4 A0.6 0.6 0 0 1 333.7 62.7 C325 78.2 316 88.6 304.9 98 Z"/></g>
+  <!-- Cabeça, pescoço e peito -->
+  <path d="M131 180.4 L131 144.4 C131.4 126.4 140 109.8 154.4 99 C168.8 89 190.4 86.8 215.6 86.8 C244.4 86.8 276.8 89.7 305.6 96.2 C327.2 101.2 345.2 110.6 353.8 124.2 C360.3 135.8 362.5 151.6 363.2 173.2 C365 234.4 368.6 295.6 377.6 338.8 C386.6 371.2 413.6 396.4 453.2 421.6 C474.8 436 492.8 448.6 507.2 459.4 C438.8 504.4 316.4 517 203.4 508 C203.4 450.4 204.8 378.4 204.8 335.2 C204.8 310 201.2 297 192.6 288.4 C172.4 272.6 138.6 258.2 117 238 L125.6 209.2 Z" fill="url(#qq-pele-colorido)"/>
+  <g clip-path="url(#qq-corpo-colorido)">
+    <!-- Sombra da nuca e brilho do alto da cabeça -->
+    <path d="M351 112 C358.9 126.4 361.8 148 363.2 173.2 C365 234.4 368.6 295.6 377.6 338.8 C386.6 371.2 413.6 396.4 453.2 421.6 C417.2 414.4 374 389.2 358.2 349.6 C343.8 310 343 238 343 180.4 C343 151.6 345.2 130 351 112 Z" fill="#9c845f" opacity=".45"/>
+    <path d="M176 97.6 C212 91.8 255.2 92.6 294.8 99.8 C258.8 100.5 215.6 103.4 188.2 110.6 Z" fill="#ddd8cf" opacity=".8"/>
+    <!-- Asa com o ombro bronzeado -->
+    <path d="M269.6 540.4 C294.8 475.6 352.4 428.8 428 413 C460.4 409.4 496.4 421.6 546.8 454 L546.8 540.4 Z" fill="#85735b"/>
+    <path d="M291.2 540.4 C312.8 490 356 454 410 443.2 C442.4 438.2 471.2 443.2 492.8 456.2 C456.8 463.4 420.8 482.8 394.2 511.6 C384.8 522.4 377.6 533.2 374 540.4 Z" fill="url(#qq-ombro-colorido)"/>
+    <g fill="none" stroke="#9a4f1a" stroke-width="2.4" stroke-linecap="round" opacity=".6"><path d="M320 533.2 C334.4 504.4 356 479.2 384.8 464.8"/><path d="M352.4 533.2 C366.8 508 388.4 490 413.6 477.8"/></g>
+    <!-- Face clara, borda branca e máscara preta da testa ao peito -->
+    <path d="M193.3 186.2 C215.6 189.8 244.4 189 268.2 178.2 C266 199.8 248 217.8 222.8 223.6 C209.8 226.5 199 225.8 191.8 225.8 Z" fill="#e3d7c3"/>
+    <path d="M141.4 125 C148.6 118.5 160.9 114.9 174.6 114.9 C189 114.9 199.8 119.2 203.4 127.1 L199 148 C190.4 160.2 189 174.6 193.3 186.2 C194 198.4 193.3 214.2 191.8 225.8 C190.4 234.4 188.2 241.6 188.2 246.6 C191.8 254.6 199 265.4 208.4 276.2 L158 252.4 L129.2 138.6 Z" fill="#f7f3ec"/>
+    <path d="M96.8 173.2 C111.2 150.2 125.6 139.4 145 138.6 L162.3 138.6 C166.6 138.6 168.1 141.5 168.1 145.8 L167.4 173.2 C166.6 180.4 164.5 186.2 164.5 193.4 C164.5 204.2 163.8 212.8 160.9 220 C167.4 232.2 176 243.8 184.6 254.6 C192.6 264.6 202.6 274 211.3 282.6 C217 289.8 218.5 302.8 218.5 324.4 C218.5 367.6 220.6 410.8 225 439.6 C233.6 464.8 251.6 482.8 273.2 497.2 L287.6 526 L96.8 526 Z" fill="#1d1b19"/>
+  </g>
+  <!-- Bico curto, rosado e de ponta preta, com a base entrando no preto do rosto -->
+  <path d="M159.4 185.4 C148.6 184 139.3 184.7 129.2 186.2 C99 191.2 64.4 213.5 32 246.6 C27.7 251 29.1 257.4 34.9 256.7 C59.4 253.1 93.2 240.2 125.6 227.9 C138.6 223.6 149.4 221.4 159.4 220 C163 212.1 163.8 192.6 159.4 185.4 Z" fill="#df6f80"/>
+  <g clip-path="url(#qq-bico-colorido)">
+    <path d="M153 207.8 C132.8 211.4 109.8 218.6 84.6 229.4" fill="none" stroke="#a8404f" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M68 144.4 L99 274 L-0.4 274 L-0.4 144.4 Z" fill="#1d1b19"/>
+  </g>
+  <path d="M102.6 196.2 C106.9 193.4 111.9 191.2 117 189.8" fill="none" stroke="#a8404f" stroke-width="2.6" stroke-linecap="round"/>
+  <!-- Olho: anel vermelho oval, íris, pupila e brilhos -->
+  <path d="M187.2 158.8 C186.4 146.9 203.4 133.6 219.6 132.9 C238.3 131.8 254.1 141.9 254.8 155.2 C255.6 168.5 240.8 180 222.4 181.1 C205.9 181.8 187.9 170.3 187.2 158.8 Z" fill="#d8404a" stroke="#9e1f2a" stroke-width="2"/>
+  <path d="M199.8 157.4 C199 146.6 208.4 137.2 220.6 136.5 C232.9 135.8 243 144 243.7 155.2 C244.4 166 235 175.4 222.8 176.1 C210.6 176.8 200.5 168.5 199.8 157.4 Z" fill="url(#qq-iris-colorido)"/>
+  <circle cx="221.7" cy="155.6" r="9.7" fill="#141210"/>
+  <circle cx="217" cy="150.2" r="4" fill="#fff"/>
+  <circle cx="228.9" cy="162.4" r="1.6" fill="#fff" opacity=".7"/>
+</svg>
