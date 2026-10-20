@@ -10,7 +10,7 @@ Rastreador de voos em tempo real feito com **HTML, CSS e JavaScript puros**: avi
 ![Leaflet](https://img.shields.io/badge/Leaflet-199900?style=for-the-badge&logo=leaflet&logoColor=white)
 ![Cloudflare Workers](https://img.shields.io/badge/Cloudflare_Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
 
-<img src="assets/preview.png" alt="Mapa escuro de São Paulo com aviões coloridos pela altitude e o painel de um voo aberto, com rota, progresso, altitude, velocidade e rastro" width="760">
+<img src="assets/preview.png" alt="Mapa escuro de São Paulo com aviões coloridos pela altitude e o painel de um voo aberto, com foto da aeronave, rota, progresso, altitude e rastro" width="760">
 <br><br>
 
 [![Testar no navegador](https://img.shields.io/badge/▶_Testar_no_navegador-0B0F14?style=for-the-badge)](https://erickfuzer.github.io/QueroQuero/)
