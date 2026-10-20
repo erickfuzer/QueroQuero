@@ -147,7 +147,8 @@ function comCors(resp, cors) {
   return r;
 }
 
-// Cache da borda da Cloudflare (ausente em outros ambientes, por isso o teste)
+// Cache da borda da Cloudflare. Só tem efeito com domínio próprio (no workers.dev
+// a gravação é ignorada) e não existe fora da Cloudflare, por isso o teste.
 async function lerCache(chave) {
   return typeof caches !== 'undefined' ? caches.default.match(chave) : null;
 }
