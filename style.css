@@ -426,6 +426,30 @@ svg .cheio { fill: currentColor; stroke: none; }
   text-align: center;
 }
 .aviso.erro { border-left: 3px solid var(--perigo); }
+body.com-alcance .aviso { top: calc(var(--nav) + var(--topo) + 60px); }
+
+.alcance {
+  position: fixed;
+  top: calc(var(--nav) + var(--topo) + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 850;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(560px, calc(100% - 24px));
+  padding: 7px 8px 7px 14px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  background: var(--superficie);
+  box-shadow: var(--sombra);
+  color: var(--suave);
+  font-size: 12.5px;
+}
+.alcance .link { flex: none; white-space: nowrap; }
+@media (min-width: 641px) {
+  body.com-painel .alcance { left: calc(50% + var(--painel) / 2); max-width: min(520px, calc(100% - var(--painel) - 24px)); }
+}
 
 .dica {
   position: fixed;

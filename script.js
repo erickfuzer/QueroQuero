@@ -12,6 +12,9 @@
     zoomPadrao: 8,
     tempoSumir: 30000,                // ms sem notícia até o avião sumir do mapa
     pontosRastro: 360,                // posições guardadas por avião (~1 h)
+    raioAeroporto: 200,               // km ao redor do aeroporto para chegadas e partidas
+    consultasAeroporto: 25,           // rotas novas consultadas por vez no painel do aeroporto
+    validadeRota: 24 * 3600000,       // ms que uma rota fica guardada no navegador
   };
 
   const params = new URLSearchParams(location.search);
@@ -572,6 +575,26 @@
     return { lat: c.lat, lon: c.lng, raio: Math.ceil(Math.min(nm * 1.05, CONFIG.raioMaximo)), limitado: nm > CONFIG.raioMaximo };
   }
 
+  // Com o mapa afastado além do alcance das fontes: contorno da área coberta e aviso com atalho
+  let contornoAlcance = null;
+  function mostrarAlcance(area) {
+    document.body.classList.toggle('com-alcance', area.limitado);
+    $('alcance').hidden = !area.limitado;
+    if (!area.limitado) {
+      if (contornoAlcance) contornoAlcance.remove();
+      contornoAlcance = null;
+      return;
+    }
+    texto('alcance-texto', `O mapa está maior que o alcance das fontes: só aparecem voos a até ${num(CONFIG.raioMaximo * 1.852)} km do centro.`);
+    const estilo = { color: TINTAS[paleta].aeroporto, weight: 1.5, opacity: 0.55, dashArray: '6 6', fill: false, interactive: false, pane: 'noite' };
+    if (contornoAlcance) contornoAlcance.setLatLng([area.lat, area.lon]).setStyle(estilo);
+    else contornoAlcance = L.circle([area.lat, area.lon], { ...estilo, radius: CONFIG.raioMaximo * 1852 }).addTo(mapa);
+  }
+  $('bt-aproximar').addEventListener('click', () => {
+    const nm = mapa.getCenter().distanceTo(mapa.getBounds().getNorthEast()) / 1852;
+    mapa.zoomIn(Math.max(1, Math.ceil(Math.log2(nm * 1.05 / CONFIG.raioMaximo))));
+  });
+
   // Só busca de novo ao mexer no mapa se a área mudou de verdade
   function areaMudou() {
     if (!ultimaArea) return true;
@@ -606,6 +629,7 @@
       receber(dados.ac || []);
       ultimaArea = area;
       raioLimitado = area.limitado;
+      mostrarAlcance(area);
       ultimoSucesso = Date.now();
       definirFonte(dados.fonte);
       definirConexao('ok');
@@ -670,6 +694,7 @@
 
   // Recarrega ao mexer no mapa, sem passar de uma consulta a cada 3 s
   mapa.on('moveend', () => {
+    if (!areaDeBusca().limitado) mostrarAlcance({ limitado: false });   // some na hora, sem esperar a consulta
     if (!buscando && areaMudou()) agendar(Math.max(600, ultimaBusca + 3000 - Date.now()));
   });
 
@@ -987,6 +1012,30 @@
   const painel = $('painel');
   const rotas = new Map(); // indicativo → rota | null | Promise
 
+  // Rotas já consultadas ficam guardadas no navegador por um dia (as "sem rota", por 6 h),
+  // para não repetir pedidos ao proxy a cada visita
+  const rotasGuardadas = (() => {
+    try { return JSON.parse(guardado.ler('qq-rotas') || '{}') || {}; } catch (e) { return {}; }
+  })();
+  for (const [cs, { r, t }] of Object.entries(rotasGuardadas)) {
+    if (Date.now() - t > (r ? CONFIG.validadeRota : CONFIG.validadeRota / 4)) { delete rotasGuardadas[cs]; continue; }
+    rotas.set(cs, r);
+    if (r && r.companhia) nomesCompanhia.set(cs.slice(0, 3), r.companhia);
+  }
+  // Grava no máximo uma vez por segundo, e de novo ao sair da página
+  let gravacaoRotas = null;
+  function gravarRotas() {
+    clearTimeout(gravacaoRotas);
+    gravacaoRotas = null;
+    const recentes = Object.entries(rotasGuardadas).sort((a, b) => b[1].t - a[1].t).slice(0, 400);
+    guardado.gravar('qq-rotas', JSON.stringify(Object.fromEntries(recentes)));
+  }
+  function guardarRota(cs, rota) {
+    rotasGuardadas[cs] = { r: rota, t: Date.now() };
+    if (!gravacaoRotas) gravacaoRotas = setTimeout(gravarRotas, 1000);
+  }
+  window.addEventListener('pagehide', () => { if (gravacaoRotas) gravarRotas(); });
+
   function selecionar(hex, centralizar = false) {
     const av = avioes.get(hex);
     if (!av) return;
@@ -1260,6 +1309,7 @@
       .then(r => r.ok ? r.json() : Promise.reject(r.status))
       .then(d => {
         rotas.set(cs, d.rota);
+        guardarRota(cs, d.rota);
         if (d.rota && d.rota.companhia) nomesCompanhia.set(cs.slice(0, 3), d.rota.companhia);
         return d.rota;
       })
@@ -1359,36 +1409,39 @@
   }
   $('bt-fechar-aero').addEventListener('click', fecharAeroporto);
 
-  // Chegadas e partidas: voos de companhia na área cuja rota (que confere) liga ao aeroporto.
-  // Busca as rotas que faltam com no máximo 4 pedidos ao mesmo tempo.
+  // Chegadas e partidas: voos de companhia perto do aeroporto cuja rota (que confere) liga a ele.
+  // Só os mais próximos têm a rota consultada, com no máximo 4 pedidos ao mesmo tempo.
   let buscaDoAeroporto = 0;
   async function preencherAeroporto() {
     const a = aeroSelecionado;
     if (!a) return;
     const vez = ++buscaDoAeroporto;
     const agora = Date.now();
-    const candidatos = [...avioes.values()].filter(av => ativo(av, agora) && ehIndicativoDeCompanhia(av.indicativo.toUpperCase()));
-    const faltam = candidatos.filter(av => !(rotas.has(av.indicativo.toUpperCase())));
+    const candidatos = [...avioes.values()]
+      .filter(av => ativo(av, agora) && ehIndicativoDeCompanhia(av.indicativo.toUpperCase()))
+      .map(av => ({ av, dist: distanciaKm(av.lat, av.lon, a.lat, a.lon) }))
+      .filter(c => c.dist <= CONFIG.raioAeroporto)
+      .sort((x, y) => x.dist - y.dist);
+    const faltam = candidatos.filter(({ av }) => !rotas.has(av.indicativo.toUpperCase())).slice(0, CONFIG.consultasAeroporto).map(c => c.av);
     let feitas = 0;
     const desenharListas = () => {
       if (aeroSelecionado !== a) return;
       const chegando = [], saindo = [];
-      for (const av of candidatos) {
+      for (const { av, dist } of candidatos) {
         const rota = rotas.get(av.indicativo.toUpperCase());
         if (!rotaConfere(av, rota)) continue;
-        const dist = distanciaKm(av.lat, av.lon, a.lat, a.lon);
         if (rota.destino.icao === a.icao) chegando.push({ av, dist, outro: rota.origem, sentido: 'de' });
         else if (rota.origem.icao === a.icao) saindo.push({ av, dist, outro: rota.destino, sentido: 'para' });
       }
       chegando.sort((x, y) => x.dist - y.dist);
       saindo.sort((x, y) => x.dist - y.dist);
-      lista('a-chegando', chegando, 'Nenhum voo chegando na área do mapa');
-      lista('a-saindo', saindo, 'Nenhum voo saindo na área do mapa');
+      lista('a-chegando', chegando, `Nenhum voo chegando a até ${CONFIG.raioAeroporto} km`);
+      lista('a-saindo', saindo, `Nenhum voo saindo a até ${CONFIG.raioAeroporto} km`);
       texto('a-n-chegando', chegando.length ? String(chegando.length) : '');
       texto('a-n-saindo', saindo.length ? String(saindo.length) : '');
       texto('a-nota', feitas < faltam.length
         ? `Consultando rotas… ${feitas} de ${faltam.length}`
-        : 'Voos na área do mapa com rota cadastrada no adsbdb que confere com a posição.');
+        : `Voos a até ${CONFIG.raioAeroporto} km do aeroporto, com rota cadastrada no adsbdb que confere com a posição.`);
     };
     const lista = (id, itens, vazio) => {
       const ul = $(id);
@@ -1854,7 +1907,7 @@
   });
 
   // ───────────────────────────── Início ─────────────────────────────
-  for (const el of [painel, painelAero, $('mapas'), $('filtros'), $('prefs'), $('status'), $('radar-controle'), document.querySelector('.legenda')]) {
+  for (const el of [painel, painelAero, $('alcance'), $('mapas'), $('filtros'), $('prefs'), $('status'), $('radar-controle'), document.querySelector('.legenda')]) {
     L.DomEvent.disableClickPropagation(el);
     L.DomEvent.disableScrollPropagation(el);
   }

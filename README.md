@@ -57,7 +57,7 @@ Rastreador de voos em tempo real feito com **HTML, CSS e JavaScript puros**: avi
 ## Como funciona
 
 - **Dados:** as APIs gratuitas de ADS-B (adsb.fi, airplanes.live, adsb.lol, OpenSky) não liberam CORS, então o navegador não consegue lê-las direto de uma página no GitHub Pages. Um proxy pequeno no **Cloudflare Workers** (`proxy/worker.js`, plano gratuito) faz a consulta, tenta as fontes em sequência e devolve só os campos usados, já com os cabeçalhos de CORS.
-- **Área visível:** as APIs consultam por raio, então o app calcula o círculo que cobre o mapa na tela (até 250 milhas náuticas). Ao arrastar ou dar zoom, só busca de novo se o centro andou mais de um quarto do raio ou o zoom mudou o raio, e no máximo uma vez a cada 3 s.
+- **Área visível:** as APIs consultam por raio, então o app calcula o círculo que cobre o mapa na tela (até 250 milhas náuticas, cerca de 460 km). Com o mapa mais afastado que isso, aparece o contorno da área coberta e um aviso com atalho para aproximar. Ao arrastar ou dar zoom, só busca de novo se o centro andou mais de um quarto do raio ou o zoom mudou o raio, e no máximo uma vez a cada 3 s.
 - **Desenho:** os aviões são desenhados num `<canvas>` por cima do Leaflet, o que mantém a animação leve mesmo com centenas de aeronaves. Cada silhueta é um traçado SVG gerado a partir das medidas reais do modelo (comprimento, envergadura, fuselagem e motores) e unido num contorno único; o mesmo traçado é usado no canvas (`Path2D`) e nos ícones da interface. Os nomes dos voos que cairiam um em cima do outro são pulados.
 - **Tipo de aeronave:** vem da categoria que o próprio transponder informa (A1 leve, A3 comercial, A5 grande porte, A7 helicóptero, B6 drone…). O modelo (designador ICAO, como `B744`, `AT76` ou `C130`) refina a escolha: quadrimotores, turboélices regionais, transportes militares e helicópteros militares. Quando a categoria não vem, o app tenta pelo modelo e pelo fabricante. A marcação de militar vem da base de aeronaves das redes de receptores.
 - **Interpolação:** cada quadro estima a posição por `velocidade × tempo` no rumo atual, sem arredondar para o pixel. Quando chega um dado novo, a diferença entre o que estava na tela e a posição real some ao longo de 1,5 s.
@@ -65,8 +65,8 @@ Rastreador de voos em tempo real feito com **HTML, CSS e JavaScript puros**: avi
 - **País de registro:** sai do endereço ICAO de 24 bits do transponder, pelas faixas que a ICAO reserva para cada país (o Brasil vai de `E40000` a `E7FFFF`).
 - **Radar de chuva:** quadros de 10 em 10 minutos do RainViewer, sobrepostos ao mapa e atualizados sozinhos.
 - **Dia e noite:** a linha que separa o dia da noite é calculada no navegador a partir da posição do Sol, sem API.
-- **Aeroportos:** uma base enxuta dos ~3.300 aeroportos médios e grandes com voo regular do OurAirports (`assets/dados/aeroportos.json`), carregada só quando usada. Chegadas e partidas são os voos da área cuja rota cadastrada liga ao aeroporto e confere com a posição.
-- **Rota:** vem do adsbdb pelo indicativo. Como a base é colaborativa e às vezes está velha, o app só mostra a rota se o avião estiver num caminho plausível entre origem e destino. O progresso é a distância já voada sobre a soma da voada com a que falta.
+- **Aeroportos:** uma base enxuta dos ~3.300 aeroportos médios e grandes com voo regular do OurAirports (`assets/dados/aeroportos.json`), carregada só quando usada. Chegadas e partidas são os voos a até 200 km cuja rota cadastrada liga ao aeroporto e confere com a posição.
+- **Rota:** vem do adsbdb pelo indicativo e fica guardada no navegador por um dia, para não repetir consultas. Como a base é colaborativa e às vezes está velha, o app só mostra a rota se o avião estiver num caminho plausível entre origem e destino. O progresso é a distância já voada sobre a soma da voada com a que falta.
 
 ## Como usar
 

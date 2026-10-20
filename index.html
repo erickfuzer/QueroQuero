@@ -192,6 +192,12 @@
   <!-- Avisos (limite da API, falha de rede, link copiado) -->
   <div id="aviso" class="aviso" role="status" aria-live="polite" hidden></div>
 
+  <!-- Aviso de alcance: com o mapa muito afastado, as fontes só cobrem um raio a partir do centro -->
+  <div id="alcance" class="alcance" role="status" hidden>
+    <span id="alcance-texto"></span>
+    <button id="bt-aproximar" class="link" type="button">Aproximar</button>
+  </div>
+
   <!-- Dica ao passar o mouse sobre um avião -->
   <div id="dica" class="dica" hidden></div>
 
