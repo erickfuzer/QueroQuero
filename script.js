@@ -50,38 +50,55 @@
   // ───────────────────────────── Tipos de aeronave ─────────────────────────────
   // Silhuetas vistas de cima, apontando para o norte, num quadro de -16 a 16.
   // O mesmo traçado vira Path2D no mapa e <path> nos ícones da interface.
+  // Os traçados são simétricos: foram gerados a partir da metade direita de cada aeronave.
   const FORMAS = {
-    comercial: {
+    comercial: {  // A320, 737, E-Jets
       nome: 'Jato comercial', escala: 0.85,
-      d: 'M0 -15C1.6 -15 2.2 -13 2.2 -11L2.2 -4.5L14 2.5L14 5.5L2.2 2L2.2 8.5L6 11.5L6 13.8L0 12.4L-6 13.8L-6 11.5L-2.2 8.5L-2.2 2L-14 5.5L-14 2.5L-2.2 -4.5L-2.2 -11C-2.2 -13 -1.6 -15 0 -15Z',
+      d: 'M0 -15.5L0.54 -15.36L1.05 -14.96L1.48 -14.33L1.82 -13.5L2.03 -12.54L2.1 -11.5L2.1 -4.6L14 2.4L14 4.4L2.1 1.6L2.1 7.5L1.8 9.2L6.2 12.4L6.2 13.8L1.3 12.8L0.5 15L0 15.2L-0.5 15L-1.3 12.8L-6.2 13.8L-6.2 12.4L-1.8 9.2L-2.1 7.5L-2.1 1.6L-14 4.4L-14 2.4L-2.1 -4.6L-2.1 -11.5L-2.03 -12.54L-1.82 -13.5L-1.48 -14.33L-1.05 -14.96L-0.54 -15.36ZM5.5 -4.2L5.96 -3.99L6.32 -3.41L6.52 -2.57L6.52 -1.63L6.32 -0.79L5.96 -0.21L5.5 0L5.04 -0.21L4.68 -0.79L4.48 -1.63L4.48 -2.57L4.68 -3.41L5.04 -3.99ZM-5.5 -4.2L-5.04 -3.99L-4.68 -3.41L-4.48 -2.57L-4.48 -1.63L-4.68 -0.79L-5.04 -0.21L-5.5 0L-5.96 -0.21L-6.32 -0.79L-6.52 -1.63L-6.52 -2.57L-6.32 -3.41L-5.96 -3.99Z',
     },
-    pesado: {
-      nome: 'Grande porte', escala: 1,
-      d: 'M0 -16C2.2 -16 3 -13.5 3 -11L3 -4.5L16 3.5L16 6.5L3 2.5L3 9L7.5 12.5L7.5 14.8L0 13.2L-7.5 14.8L-7.5 12.5L-3 9L-3 2.5L-16 6.5L-16 3.5L-3 -4.5L-3 -11C-3 -13.5 -2.2 -16 0 -16Z',
+    pesado: {  // A330, 777, 787
+      nome: 'Grande porte', escala: 0.95,
+      d: 'M0 -16L0.7 -15.85L1.35 -15.4L1.91 -14.68L2.34 -13.75L2.61 -12.66L2.7 -11.5L2.7 -4.8L16 4.4L16 6.2L2.7 3.2L2.7 8L2.3 10.2L7.6 13.9L7.6 15.2L1.6 14.2L0.6 16L0 16.2L-0.6 16L-1.6 14.2L-7.6 15.2L-7.6 13.9L-2.3 10.2L-2.7 8L-2.7 3.2L-16 6.2L-16 4.4L-2.7 -4.8L-2.7 -11.5L-2.61 -12.66L-2.34 -13.75L-1.91 -14.68L-1.35 -15.4L-0.7 -15.85ZM7 -4L7.63 -3.73L8.13 -2.98L8.41 -1.9L8.41 -0.7L8.13 0.38L7.63 1.13L7 1.4L6.37 1.13L5.87 0.38L5.59 -0.7L5.59 -1.9L5.87 -2.98L6.37 -3.73ZM-7 -4L-6.37 -3.73L-5.87 -2.98L-5.59 -1.9L-5.59 -0.7L-5.87 0.38L-6.37 1.13L-7 1.4L-7.63 1.13L-8.13 0.38L-8.41 -0.7L-8.41 -1.9L-8.13 -2.98L-7.63 -3.73Z',
     },
-    executivo: {
-      nome: 'Regional ou executivo', escala: 0.85,
-      d: 'M0 -13C1.3 -13 1.8 -11 1.8 -9L1.8 -2L11 3L11 5.2L1.8 3L1.8 8.5L5.5 11L5.5 12.6L0 11.6L-5.5 12.6L-5.5 11L-1.8 8.5L-1.8 3L-11 5.2L-11 3L-1.8 -2L-1.8 -9C-1.8 -11 -1.3 -13 0 -13ZM1.8 4C3.6 4 4.6 4.7 4.6 6.4C4.6 8.1 3.6 8.8 1.8 8.8ZM-1.8 4C-3.6 4 -4.6 4.7 -4.6 6.4C-4.6 8.1 -3.6 8.8 -1.8 8.8Z',
+    jumbo: {  // 747, A380, A340
+      nome: 'Quadrimotor de grande porte', escala: 1,
+      d: 'M0 -16.5L0.75 -16.31L1.45 -15.76L2.05 -14.89L2.51 -13.75L2.8 -12.42L2.9 -11L2.9 -4.4L16.5 5.3L16.5 7.1L2.9 4.2L2.9 8.6L2.4 10.6L7.8 14.3L7.8 15.6L1.7 14.6L0.6 16.4L0 16.6L-0.6 16.4L-1.7 14.6L-7.8 15.6L-7.8 14.3L-2.4 10.6L-2.9 8.6L-2.9 4.2L-16.5 7.1L-16.5 5.3L-2.9 -4.4L-2.9 -11L-2.8 -12.42L-2.51 -13.75L-2.05 -14.89L-1.45 -15.76L-0.75 -16.31ZM6.4 -4L6.92 -3.77L7.34 -3.13L7.57 -2.21L7.57 -1.19L7.34 -0.27L6.92 0.37L6.4 0.6L5.88 0.37L5.46 -0.27L5.23 -1.19L5.23 -2.21L5.46 -3.13L5.88 -3.77ZM-6.4 -4L-5.88 -3.77L-5.46 -3.13L-5.23 -2.21L-5.23 -1.19L-5.46 -0.27L-5.88 0.37L-6.4 0.6L-6.92 0.37L-7.34 -0.27L-7.57 -1.19L-7.57 -2.21L-7.34 -3.13L-6.92 -3.77ZM11.3 -0.4L11.78 -0.19L12.16 0.39L12.37 1.23L12.37 2.17L12.16 3.01L11.78 3.59L11.3 3.8L10.82 3.59L10.44 3.01L10.23 2.17L10.23 1.23L10.44 0.39L10.82 -0.19ZM-11.3 -0.4L-10.82 -0.19L-10.44 0.39L-10.23 1.23L-10.23 2.17L-10.44 3.01L-10.82 3.59L-11.3 3.8L-11.78 3.59L-12.16 3.01L-12.37 2.17L-12.37 1.23L-12.16 0.39L-11.78 -0.19Z',
     },
-    leve: {
+    cargueiro: {  // KC-390, C-130, A400M
+      nome: 'Transporte militar', escala: 0.9,
+      d: 'M0.6 -14.5L1.14 -14.36L1.65 -13.96L2.08 -13.33L2.42 -12.5L2.63 -11.54L2.7 -10.5L2.8 -3.4L15 1.4L15 3.3L2.8 3L2.7 6L2.1 9L1.5 10.6L7 12.6L7 14.1L1.2 13.9L0.7 14.8L0 14.9L-0.7 14.8L-1.2 13.9L-7 14.1L-7 12.6L-1.5 10.6L-2.1 9L-2.7 6L-2.8 3L-15 3.3L-15 1.4L-2.8 -3.4L-2.7 -10.5L-2.63 -11.54L-2.42 -12.5L-2.08 -13.33L-1.65 -13.96L-1.14 -14.36ZM6.4 -4.9L6.94 -4.64L7.38 -3.92L7.62 -2.88L7.62 -1.72L7.38 -0.68L6.94 0.04L6.4 0.3L5.86 0.04L5.42 -0.68L5.18 -1.72L5.18 -2.88L5.42 -3.92L5.86 -4.64ZM-6.4 -4.9L-5.86 -4.64L-5.42 -3.92L-5.18 -2.88L-5.18 -1.72L-5.42 -0.68L-5.86 0.04L-6.4 0.3L-6.94 0.04L-7.38 -0.68L-7.62 -1.72L-7.62 -2.88L-7.38 -3.92L-6.94 -4.64Z',
+    },
+    caca: {  // F-39 Gripen
+      nome: 'Caça', escala: 0.85,
+      d: 'M0 -16L0.55 -14L1.05 -11L1.3 -8.2L1.45 -6.8L5.4 -3.6L5.4 -2.8L1.75 -3.2L2.1 -2.2L2.1 -0.8L10 7.4L10 8.6L2.1 8.6L1.7 11.2L1.15 13L0 13L-1.15 13L-1.7 11.2L-2.1 8.6L-10 8.6L-10 7.4L-2.1 -0.8L-2.1 -2.2L-1.75 -3.2L-5.4 -2.8L-5.4 -3.6L-1.45 -6.8L-1.3 -8.2L-1.05 -11L-0.55 -14Z',
+    },
+    turboelice: {  // ATR, Dash 8, Bandeirante
+      nome: 'Regional turboélice', escala: 0.85,
+      d: 'M0 -14L0.57 -13.88L1.1 -13.53L1.56 -12.97L1.91 -12.25L2.13 -11.41L2.2 -10.5L2.2 -3.8L14.5 -3.1L14.5 -0.5L2.2 0L2.1 6L1.5 9.4L5.8 10.3L5.8 12.2L1.1 12.4L0.5 13.3L0 13.4L-0.5 13.3L-1.1 12.4L-5.8 12.2L-5.8 10.3L-1.5 9.4L-2.1 6L-2.2 0L-14.5 -0.5L-14.5 -3.1L-2.2 -3.8L-2.2 -10.5L-2.13 -11.41L-1.91 -12.25L-1.56 -12.97L-1.1 -13.53L-0.57 -13.88ZM5.6 -7L6.1 -6.69L6.5 -5.83L6.72 -4.59L6.72 -3.21L6.5 -1.97L6.1 -1.11L5.6 -0.8L5.1 -1.11L4.7 -1.97L4.48 -3.21L4.48 -4.59L4.7 -5.83L5.1 -6.69ZM-5.6 -7L-5.1 -6.69L-4.7 -5.83L-4.48 -4.59L-4.48 -3.21L-4.7 -1.97L-5.1 -1.11L-5.6 -0.8L-6.1 -1.11L-6.5 -1.97L-6.72 -3.21L-6.72 -4.59L-6.5 -5.83L-6.1 -6.69ZM2.8 -7.4L8.4 -7.4L8.4 -6.6L2.8 -6.6ZM-2.8 -7.4L-8.4 -7.4L-8.4 -6.6L-2.8 -6.6Z',
+    },
+    executivo: {  // Citation, Phenom, Learjet
+      nome: 'Jato executivo', escala: 0.8,
+      d: 'M0 -13.5L0.39 -13.37L0.75 -13L1.06 -12.42L1.3 -11.65L1.45 -10.76L1.5 -9.8L1.5 -2.6L10.6 1.7L10.8 3.1L1.5 2.4L1.4 7.5L1 9.6L5.2 11.1L5.2 12.3L0.8 12.1L0.3 13L0 13L-0.3 13L-0.8 12.1L-5.2 12.3L-5.2 11.1L-1 9.6L-1.4 7.5L-1.5 2.4L-10.8 3.1L-10.6 1.7L-1.5 -2.6L-1.5 -9.8L-1.45 -10.76L-1.3 -11.65L-1.06 -12.42L-0.75 -13L-0.39 -13.37ZM2.5 3.3L2.98 3.53L3.36 4.17L3.57 5.09L3.57 6.11L3.36 7.03L2.98 7.67L2.5 7.9L2.02 7.67L1.64 7.03L1.43 6.11L1.43 5.09L1.64 4.17L2.02 3.53ZM-2.5 3.3L-2.02 3.53L-1.64 4.17L-1.43 5.09L-1.43 6.11L-1.64 7.03L-2.02 7.67L-2.5 7.9L-2.98 7.67L-3.36 7.03L-3.57 6.11L-3.57 5.09L-3.36 4.17L-2.98 3.53Z',
+    },
+    leve: {  // Cessna, Piper, Cirrus
       nome: 'Aviação leve', escala: 0.8,
-      d: 'M0 -11C1 -11 1.5 -9.6 1.5 -8L1.5 -5.5L13 -5.5L13 -2.2L1.5 -2.2L1 6.5L5 7.5L5 9.8L0 9.6L-5 9.8L-5 7.5L-1 6.5L-1.5 -2.2L-13 -2.2L-13 -5.5L-1.5 -5.5L-1.5 -8C-1.5 -9.6 -1 -11 0 -11ZM-3.5 -12.8L3.5 -12.8L3.5 -11.6L-3.5 -11.6Z',
+      d: 'M0 -10.2L1.2 -10L1.7 -9L1.9 -7L1.9 -6.6L12.4 -6.4L13 -5.8L13.1 -4.8L13 -3.6L12.4 -3.1L1.9 -3.2L1.6 1L1 6.8L5.2 7L5.5 8.2L5.2 9.6L0.9 9.7L0.5 10.8L0 10.8L-0.5 10.8L-0.9 9.7L-5.2 9.6L-5.5 8.2L-5.2 7L-1 6.8L-1.6 1L-1.9 -3.2L-12.4 -3.1L-13 -3.6L-13.1 -4.8L-13 -5.8L-12.4 -6.4L-1.9 -6.6L-1.9 -7L-1.7 -9L-1.2 -10ZM-3.8 -11.3L3.8 -11.3L3.8 -10.4L-3.8 -10.4Z',
     },
     helicoptero: {
-      nome: 'Helicóptero', escala: 0.95, rotor: true,
-      d: 'M0 -9.5C3.8 -9.5 5 -6 5 -2C5 2.2 3.2 4.6 1.3 5.6L1 12.5L4.2 12.5L4.2 14.6L-4.2 14.6L-4.2 12.5L-1 12.5L-1.3 5.6C-3.2 4.6 -5 2.2 -5 -2C-5 -6 -3.8 -9.5 0 -9.5Z',
+      nome: 'Helicóptero', escala: 0.9, rotor: 3,
+      d: 'M0 -9.5L1.8 -9.1L3 -7.6L3.5 -5L3.4 -1.5L2.6 1.6L1.2 3.6L0.75 5L0.65 10.2L3 10.2L3 11.4L0.6 11.4L0.5 13.4L0 13.6L-0.5 13.4L-0.6 11.4L-3 11.4L-3 10.2L-0.65 10.2L-0.75 5L-1.2 3.6L-2.6 1.6L-3.4 -1.5L-3.5 -5L-3 -7.6L-1.8 -9.1Z',
     },
-    caca: {
-      nome: 'Caça', escala: 0.85,
-      d: 'M0 -15.5L1.6 -10L2 -3L11.5 5L11.5 7.6L2 5.2L2.6 9.4L6.2 12.2L6.2 13.8L0 12.7L-6.2 13.8L-6.2 12.2L-2.6 9.4L-2 5.2L-11.5 7.6L-11.5 5L-2 -3L-1.6 -10Z',
+    helicoptero_militar: {  // Black Hawk
+      nome: 'Helicóptero militar', escala: 0.95, rotor: 4,
+      d: 'M0 -11.5L1.6 -11.2L2.7 -10L3.3 -7.5L3.6 -4.5L3.6 1.6L3 3.4L1.9 4.6L1 5.6L0.8 11.4L5 11.4L5 13L0.75 13L0.6 15.4L0 15.6L-0.6 15.4L-0.75 13L-5 13L-5 11.4L-0.8 11.4L-1 5.6L-1.9 4.6L-3 3.4L-3.6 1.6L-3.6 -4.5L-3.3 -7.5L-2.7 -10L-1.6 -11.2Z',
     },
     planador: {
       nome: 'Planador', escala: 0.8,
-      d: 'M0 -8C0.9 -8 1.1 -6 1.1 -4L1.1 -2L16 -1.2L16 0.6L1.1 0.6L0.6 9L4 9.6L4 11.2L-4 11.2L-4 9.6L-0.6 9L-1.1 0.6L-16 0.6L-16 -1.2L-1.1 -2L-1.1 -4C-1.1 -6 -0.9 -8 0 -8Z',
+      d: 'M0 -9.5L0.34 -9.41L0.65 -9.17L0.92 -8.77L1.13 -8.25L1.26 -7.65L1.3 -7L1.3 -2.9L15.6 -1.8L15.6 -0.1L1.3 -0.4L1 3L0.65 9.2L4 9.5L4 11.1L0.55 11.2L0 11.6L-0.55 11.2L-4 11.1L-4 9.5L-0.65 9.2L-1 3L-1.3 -0.4L-15.6 -0.1L-15.6 -1.8L-1.3 -2.9L-1.3 -7L-1.26 -7.65L-1.13 -8.25L-0.92 -8.77L-0.65 -9.17L-0.34 -9.41Z',
     },
     drone: {
-      nome: 'Drone', escala: 0.6,
-      d: 'M-1.8 -10L1.8 -10L1.8 -1.8L10 -1.8L10 1.8L1.8 1.8L1.8 10L-1.8 10L-1.8 1.8L-10 1.8L-10 -1.8L-1.8 -1.8Z',
+      nome: 'Drone', escala: 0.75,
+      d: 'M0 -10L0.41 -9.91L0.8 -9.67L1.13 -9.27L1.39 -8.75L1.55 -8.15L1.6 -7.5L1.6 -1.9L13.5 -1L13.5 1L1.6 1.6L1.3 6.3L4.6 9.5L4.6 10.9L0.9 9.1L0.6 10.6L0 10.6L-0.6 10.6L-0.9 9.1L-4.6 10.9L-4.6 9.5L-1.3 6.3L-1.6 1.6L-13.5 1L-13.5 -1L-1.6 -1.9L-1.6 -7.5L-1.55 -8.15L-1.39 -8.75L-1.13 -9.27L-0.8 -9.67L-0.41 -9.91ZM-2.6 11.1L2.6 11.1L2.6 11.6L-2.6 11.6Z',
     },
     balao: {
       nome: 'Balão', escala: 0.6, semRumo: true,
@@ -106,8 +123,12 @@
 
   // Modelos (designador ICAO) para quando a categoria não vem ou não basta
   const lista = s => new Set(s.split(' '));
-  const HELICOPTEROS = lista('R22 R44 R66 AS50 AS55 AS65 AS32 AS3B EC20 EC25 EC30 EC35 EC45 EC55 EC75 H160 B06 B06T B206 B407 B412 B429 B505 B212 S76 S92 S61 A109 A119 A139 A169 A189 BK17 H60 UH1 H500 MD52 MD60 NH90 H47 H64');
-  const GRANDES = lista('A306 A30B A310 A332 A333 A338 A339 A342 A343 A345 A346 A359 A35K A388 B741 B742 B743 B744 B748 B762 B763 B764 B772 B773 B77L B77W B778 B779 B788 B789 B78X MD11 IL96 C17 C5M A400');
+  const HELICOPTEROS = lista('R22 R44 R66 AS50 AS55 AS65 AS32 AS3B EC20 EC25 EC30 EC35 EC45 EC55 EC75 H160 B06 B06T B206 B407 B412 B429 B505 B212 S76 S92 S61 A109 A119 A139 A169 A189 BK17 H60 S70 UH1 H500 MD52 MD60 NH90 H47 H64');
+  const HELICOPTEROS_MILITARES = lista('H60 S70 UH1 H47 H64');
+  const QUADRIMOTORES = lista('A388 B741 B742 B743 B744 B748 B74S A342 A343 A345 A346 IL96 A124 C5M');
+  const GRANDES = lista('A306 A30B A310 A332 A333 A338 A339 A359 A35K B762 B763 B764 B772 B773 B77L B77W B778 B779 B788 B789 B78X MD11');
+  const CARGUEIROS = lista('C130 C30J E390 KC39 A400 C295 CN35 C27J C160 AN12 AN26 AN32 IL76 C17');
+  const TURBOELICES = lista('AT43 AT44 AT45 AT46 AT72 AT73 AT75 AT76 DH8A DH8B DH8C DH8D E110 E120 SF34 JS31 JS32 JS41 D328 B190 F50 L410 C212');
   const CACAS = lista('F5 F15 F16 F18H F18S F22 F35 EUFI RFAL T38 A10 HAWK L39');
   const FABRICANTES_LEVES = /\b(CESSNA|PIPER|BEECH|CIRRUS|DIAMOND|MOONEY|TECNAM|ROBIN|SOCATA|NEIVA|AERO BOERO|EXTRA|VANS|GRUMMAN AMERICAN)\b/i;
 
@@ -116,9 +137,12 @@
     const cat = a.category || '';
     const militar = (a.dbFlags & 1) === 1;
     let forma;
-    if (cat === 'A7' || HELICOPTEROS.has(tipo)) forma = 'helicoptero';
+    if (cat === 'A7' || HELICOPTEROS.has(tipo)) forma = militar || HELICOPTEROS_MILITARES.has(tipo) ? 'helicoptero_militar' : 'helicoptero';
     else if (cat === 'A6' || CACAS.has(tipo)) forma = 'caca';
+    else if (CARGUEIROS.has(tipo)) forma = 'cargueiro';
+    else if (QUADRIMOTORES.has(tipo)) forma = 'jumbo';
     else if (cat === 'A5' || GRANDES.has(tipo)) forma = 'pesado';
+    else if (TURBOELICES.has(tipo)) forma = 'turboelice';
     else if (cat === 'A3' || cat === 'A4') forma = 'comercial';
     else if (cat === 'A2') forma = 'executivo';
     else if (cat === 'A1' || cat === 'B4') forma = 'leve';
@@ -130,8 +154,13 @@
     else if (FABRICANTES_LEVES.test(a.desc || '')) forma = 'leve';
     else forma = 'comercial';
     const grupo = militar ? 'militar'
-      : { comercial: 'comercial', pesado: 'comercial', executivo: 'executivo', leve: 'leve', helicoptero: 'helicoptero', caca: 'militar' }[forma] || 'outros';
-    return { forma, grupo, militar, semCategoria: !cat && !FABRICANTES_LEVES.test(a.desc || '') && !HELICOPTEROS.has(tipo) && !CACAS.has(tipo) && !GRANDES.has(tipo) };
+      : {
+        comercial: 'comercial', pesado: 'comercial', jumbo: 'comercial', cargueiro: 'comercial',
+        turboelice: 'executivo', executivo: 'executivo', leve: 'leve',
+        helicoptero: 'helicoptero', helicoptero_militar: 'helicoptero', caca: 'militar',
+      }[forma] || 'outros';
+    const conhecido = [HELICOPTEROS, CACAS, CARGUEIROS, QUADRIMOTORES, GRANDES, TURBOELICES].some(l => l.has(tipo));
+    return { forma, grupo, militar, semCategoria: !cat && !conhecido && !FABRICANTES_LEVES.test(a.desc || '') };
   }
 
   // Ícone SVG de uma forma (busca, filtros e painel)
@@ -146,15 +175,24 @@
     path.setAttribute('stroke-width', '1');
     if (angulo) path.setAttribute('transform', `rotate(${angulo})`);
     svg.append(path);
-    if (FORMAS[forma].rotor) {
-      for (const giro of [45, -45]) {
-        const pa = document.createElementNS(SVG_NS, 'path');
-        pa.setAttribute('d', 'M-12 -1.2H12V1.2H-12Z');
-        pa.setAttribute('fill', cor);
-        pa.setAttribute('opacity', '0.8');
-        pa.setAttribute('transform', `rotate(${giro + angulo})`);
-        svg.append(pa);
-      }
+    const pas = FORMAS[forma].rotor || 0;
+    if (pas) {
+      const disco = document.createElementNS(SVG_NS, 'circle');
+      disco.setAttribute('r', '12.5');
+      disco.setAttribute('fill', cor);
+      disco.setAttribute('stroke', 'none');
+      disco.setAttribute('opacity', '0.18');
+      svg.prepend(disco);
+    }
+    for (let i = 0; i < pas; i++) {
+      const pa = document.createElementNS(SVG_NS, 'path');
+      pa.setAttribute('d', 'M0 -1.2H12.5V1.2H0Z');
+      pa.setAttribute('fill', cor);
+      pa.setAttribute('stroke', 'rgba(0, 0, 0, 0.5)');
+      pa.setAttribute('stroke-width', '1');
+      pa.setAttribute('opacity', '0.8');
+      pa.setAttribute('transform', `rotate(${angulo + 30 + (i * 360) / pas})`);
+      svg.append(pa);
     }
     return svg;
   }
@@ -699,13 +737,19 @@
     ctx.stroke(forma.caminho);
     // Rotor girando por cima do helicóptero
     if (forma.rotor) {
-      ctx.rotate(av.solo && av.gs < 1 ? 0.6 : (agora / 70) % (Math.PI * 2));
+      // Disco translúcido do rotor e as pás girando por cima
+      const alfa = ctx.globalAlpha;
       ctx.fillStyle = cor;
-      ctx.globalAlpha *= 0.75;
-      for (let i = 0; i < 2; i++) {
-        ctx.rotate(Math.PI / 2);
+      ctx.globalAlpha = alfa * 0.18;
+      ctx.beginPath();
+      ctx.arc(0, 0, 12.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.rotate(av.solo && av.gs < 1 ? 0.6 : (agora / 70) % (Math.PI * 2));
+      ctx.globalAlpha = alfa * 0.75;
+      for (let i = 0; i < forma.rotor; i++) {
+        ctx.rotate((Math.PI * 2) / forma.rotor);
         ctx.beginPath();
-        ctx.rect(-12, -1.2, 24, 2.4);
+        ctx.rect(0, -1.2, 12.5, 2.4);
         ctx.fill();
         ctx.stroke();
       }

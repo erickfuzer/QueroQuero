@@ -20,7 +20,13 @@ Rastreador de voos em tempo real feito com **HTML, CSS e JavaScript puros**: avi
 ## Funcionalidades
 
 - **Aviões em tempo real** girando conforme o rumo e atualizados a cada 10 s, com **movimento suave** entre uma atualização e outra
-- **Ícone por tipo de aeronave:** jato comercial, grande porte, regional ou executivo, aviação leve, helicóptero (com rotor girando), caça, planador, drone, balão e veículo em solo. **Militares** ganham um contorno de destaque
+- **Ícone por tipo de aeronave**, com silhuetas desenhadas para o projeto:
+  - jato comercial (A320, 737), grande porte bimotor (A330, 777, 787) e quadrimotor (747, A380)
+  - regional turboélice (ATR, Dash 8), jato executivo e aviação leve (Cessna, Piper)
+  - helicóptero civil e militar (Black Hawk), com o rotor girando
+  - caça com a silhueta do **F-39 Gripen** e transporte militar com a do **KC-390**, em homenagem à aviação brasileira
+  - planador, drone, balão e veículo em solo
+  - **militares** ganham um contorno de destaque
 - **Tema claro e escuro:** segue o sistema por padrão, com opção de fixar um dos dois; o mapa e a interface trocam juntos
 - **Painel do voo:** indicativo, companhia, tipo, altitude, velocidade, velocidade vertical, rumo, squawk (com alerta de emergência), posição, matrícula, modelo, código ICAO e país de registro
 - **Rota com progresso:** origem, destino, quanto já foi percorrido e quanto falta, quando a rota está cadastrada no adsbdb e confere com a posição do avião; quando não há rota confiável, o painel diz isso em vez de inventar
@@ -46,8 +52,8 @@ Rastreador de voos em tempo real feito com **HTML, CSS e JavaScript puros**: avi
 
 - **Dados:** as APIs gratuitas de ADS-B (adsb.fi, airplanes.live, adsb.lol, OpenSky) não liberam CORS, então o navegador não consegue lê-las direto de uma página no GitHub Pages. Um proxy pequeno no **Cloudflare Workers** (`proxy/worker.js`, plano gratuito) faz a consulta, tenta as fontes em sequência e devolve só os campos usados, já com os cabeçalhos de CORS.
 - **Área visível:** as APIs consultam por raio, então o app calcula o círculo que cobre o mapa na tela (até 250 milhas náuticas). Ao arrastar ou dar zoom, só busca de novo se o centro andou mais de um quarto do raio ou o zoom mudou o raio, e no máximo uma vez a cada 3 s.
-- **Desenho:** os aviões são desenhados num `<canvas>` por cima do Leaflet, o que mantém a animação leve mesmo com centenas de aeronaves. Cada silhueta é um traçado SVG usado tanto no canvas (`Path2D`) quanto nos ícones da interface. Os nomes dos voos que cairiam um em cima do outro são pulados.
-- **Tipo de aeronave:** vem da categoria que o próprio transponder informa (A1 leve, A3 comercial, A5 grande porte, A7 helicóptero, B6 drone…). Quando ela não vem, o app tenta pelo modelo e pelo fabricante. A marcação de militar vem da base de aeronaves das redes de receptores.
+- **Desenho:** os aviões são desenhados num `<canvas>` por cima do Leaflet, o que mantém a animação leve mesmo com centenas de aeronaves. Cada silhueta é um traçado SVG simétrico, gerado a partir da metade direita da aeronave, e o mesmo traçado é usado no canvas (`Path2D`) e nos ícones da interface. Os nomes dos voos que cairiam um em cima do outro são pulados.
+- **Tipo de aeronave:** vem da categoria que o próprio transponder informa (A1 leve, A3 comercial, A5 grande porte, A7 helicóptero, B6 drone…). O modelo (designador ICAO, como `B744`, `AT76` ou `C130`) refina a escolha: quadrimotores, turboélices regionais, transportes militares e helicópteros militares. Quando a categoria não vem, o app tenta pelo modelo e pelo fabricante. A marcação de militar vem da base de aeronaves das redes de receptores.
 - **Interpolação:** cada quadro estima a posição por `velocidade × tempo` no rumo atual, sem arredondar para o pixel. Quando chega um dado novo, a diferença entre o que estava na tela e a posição real some ao longo de 1,5 s.
 - **Rastro:** as APIs gratuitas não entregam o histórico do voo, então o app guarda as posições recebidas desde que a página foi aberta (até cerca de 1 hora por avião).
 - **País de registro:** sai do endereço ICAO de 24 bits do transponder, pelas faixas que a ICAO reserva para cada país (o Brasil vai de `E40000` a `E7FFFF`).
