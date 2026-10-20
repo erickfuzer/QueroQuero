@@ -17,6 +17,8 @@ Rastreador de voos em tempo real feito com **HTML, CSS e JavaScript puros**: avi
 
 </div>
 
+O nome é uma homenagem à Base Aérea de Santa Maria (BASM), conhecida como Quero-Quero, onde servi na Força Aérea Brasileira.
+
 ## Funcionalidades
 
 - **Aviões em tempo real** girando conforme o rumo e atualizados a cada 10 s, com **movimento suave** entre uma atualização e outra
