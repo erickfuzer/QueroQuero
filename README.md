@@ -10,7 +10,7 @@ Rastreador de voos em tempo real feito com **HTML, CSS e JavaScript puros**: avi
 ![Leaflet](https://img.shields.io/badge/Leaflet-199900?style=for-the-badge&logo=leaflet&logoColor=white)
 ![Cloudflare Workers](https://img.shields.io/badge/Cloudflare_Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
 
-<img src="assets/preview.png" alt="Mapa escuro de São Paulo com aviões coloridos pela altitude e o painel de um voo aberto, com foto da aeronave, rota, progresso, altitude e rastro" width="760">
+<img src="assets/preview.png" alt="Mapa escuro de São Paulo com aviões coloridos pela altitude e o painel de um 777 da KLM chegando de Amsterdã, com foto, rota, progresso e rastro" width="760">
 <br><br>
 
 [![Testar no navegador](https://img.shields.io/badge/▶_Testar_no_navegador-0B0F14?style=for-the-badge)](https://erickfuzer.github.io/QueroQuero/)
@@ -19,54 +19,55 @@ Rastreador de voos em tempo real feito com **HTML, CSS e JavaScript puros**: avi
 
 ## Funcionalidades
 
-- **Aviões em tempo real** girando conforme o rumo e atualizados a cada 10 s, com **movimento suave** entre uma atualização e outra
-- **Ícone por tipo de aeronave**, com silhuetas desenhadas para o projeto:
-  - jato comercial (A320, 737), grande porte bimotor (A330, 777, 787) e quadrimotor (747, A380)
-  - regional turboélice (ATR, Dash 8), jato executivo e aviação leve (Cessna, Piper)
-  - helicóptero civil e militar (Black Hawk), com o rotor girando
-  - caça com a silhueta do **F-39 Gripen** e transporte militar com a do **KC-390**, em homenagem à aviação brasileira
-  - planador, drone, balão e veículo em solo
-  - **militares** ganham um contorno de destaque
-- **Tema claro e escuro** na interface, seguindo o sistema por padrão
-- **Seletor de mapa:** escuro, claro, satélite, relevo e ruas, independente do tema da interface
+**No mapa**
+- Aviões em tempo real, atualizados a cada 10 s e com **movimento suave** entre uma atualização e outra
+- **Ícone por tipo de aeronave**, com silhuetas desenhadas para o projeto: jato comercial, grande porte, quadrimotor, regional turboélice, executivo, aviação leve, helicópteros, planador, drone e balão. O caça tem a silhueta do **F-39 Gripen** e o transporte militar a do **KC-390**, em homenagem à aviação brasileira; **militares** ganham um contorno de destaque
+- Cor pela altitude, com legenda, e o **rastro** do voo selecionado colorido trecho a trecho
+- **Cinco mapas:** escuro, claro, satélite, relevo e ruas, independentes do tema da interface
 - **Camadas:** radar de chuva das últimas 2 horas (com animação), aeroportos, sombra de dia e noite e rastro de todos os aviões
-- **Aeroportos:** clique num aeroporto (ou busque por "GRU", "Guarulhos") para ver os voos chegando e saindo na área do mapa
-- **Painel do voo:** indicativo, companhia, tipo, altitude, velocidade, velocidade vertical, rumo, squawk (com alerta de emergência), posição, matrícula, modelo, código ICAO e país de registro
-- **Rota com progresso:** origem, destino, quanto já foi percorrido e quanto falta, quando a rota está cadastrada no adsbdb e confere com a posição do avião; quando não há rota confiável, o painel diz isso em vez de inventar
-- **Foto da aeronave** no painel, do Planespotters.net, com o crédito do fotógrafo
-- **Rastro recente** desenhado no mapa, colorido pela altitude de cada trecho
-- **Seguir:** o mapa acompanha o avião selecionado
-- **Compartilhar:** gera um link que abre o mapa já com o voo selecionado
-- **Busca** por indicativo, matrícula, código ICAO ou aeroporto, com sugestões e atalho <kbd>/</kbd>
-- **Filtros** por tipo de aeronave, companhia, situação (no ar ou em solo) e altitude, com atalhos para só militares, só helicópteros e emergências
-- **Preferências:** unidades (pés ou metros, nós ou km/h) e nomes dos voos no mapa, lembradas pelo navegador
-- **Relógio UTC (Zulu)** na barra, o horário usado na aviação
-- **Sua localização** no início (com permissão) e no botão de mira; sem ela, o mapa abre sobre São Paulo
-- **Avisos amigáveis** quando o limite gratuito estoura ou a fonte de dados falha, com nova tentativa automática
-- **Economia:** busca só a área visível do mapa, só refaz a busca quando a área muda de verdade e pausa tudo quando a aba fica oculta
-- **Celular:** o painel vira uma folha inferior; arraste para cima para ver tudo, para baixo para recolher ou fechar
+
+**No painel do voo**
+- Indicativo, companhia, tipo, altitude, velocidade, velocidade vertical, rumo, squawk (com alerta de emergência), posição, matrícula, modelo, código ICAO e país de registro
+- **Foto da aeronave**, do Planespotters.net, com o crédito do fotógrafo
+- **Rota com progresso:** origem, destino, quanto já foi voado e quanto falta, só quando a rota cadastrada confere com a posição do avião; se não confere, o painel diz isso em vez de inventar
+- **Seguir**, para o mapa acompanhar o avião, e **compartilhar**, com um link que abre o mapa já no voo
+
+**Aeroportos**
+- Clique num aeroporto, ou busque por "GRU" ou "Guarulhos", para ver os voos **chegando e saindo** num raio de 200 km
+
+**Na barra**
+- **Busca** por indicativo, matrícula, código ICAO ou aeroporto, com atalho <kbd>/</kbd>
+- **Filtros** por tipo, companhia, situação (no ar ou em solo) e altitude, com atalhos para só militares, só helicópteros e emergências
+- **Preferências:** tema claro ou escuro (segue o sistema por padrão), pés ou metros, nós ou km/h e nomes dos voos no mapa, lembradas pelo navegador
+- **Relógio UTC (Zulu)**, o horário usado na aviação, e a situação da conexão ao vivo
+
+**No dia a dia**
+- Abre na sua localização (com permissão) ou sobre São Paulo
+- Busca só a área visível e pausa quando a aba fica oculta; com o mapa afastado demais, mostra até onde as fontes alcançam
+- Avisos claros quando o limite gratuito estoura ou a fonte falha, com nova tentativa automática
+- **Celular:** o painel vira uma folha inferior que se arrasta para cima para ver tudo
 
 <details>
-<summary>Ver no tema claro e no celular</summary>
+<summary>Ver no satélite, no tema claro e no celular</summary>
 <br>
-<img src="assets/preview-claro.png" alt="O mesmo mapa no tema claro, com o painel do voo aberto" width="760">
+<img src="assets/preview-satelite.png" alt="Mapa de satélite de São Paulo com radar de chuva, aeroportos e o painel de Guarulhos com os voos chegando e saindo" width="760">
+<br><br>
+<img src="assets/preview-claro.png" alt="O mesmo voo no tema claro, com o painel aberto" width="760">
 <br><br>
 <img src="assets/preview-mobile.png" alt="Versão mobile com o painel do voo como folha inferior compacta e o avião selecionado acima dela" width="260">
 </details>
 
 ## Como funciona
 
-- **Dados:** as APIs gratuitas de ADS-B (adsb.fi, airplanes.live, adsb.lol, OpenSky) não liberam CORS, então o navegador não consegue lê-las direto de uma página no GitHub Pages. Um proxy pequeno no **Cloudflare Workers** (`proxy/worker.js`, plano gratuito) faz a consulta, tenta as fontes em sequência e devolve só os campos usados, já com os cabeçalhos de CORS.
-- **Área visível:** as APIs consultam por raio, então o app calcula o círculo que cobre o mapa na tela (até 250 milhas náuticas, cerca de 460 km). Com o mapa mais afastado que isso, aparece o contorno da área coberta e um aviso com atalho para aproximar. Ao arrastar ou dar zoom, só busca de novo se o centro andou mais de um quarto do raio ou o zoom mudou o raio, e no máximo uma vez a cada 3 s.
-- **Desenho:** os aviões são desenhados num `<canvas>` por cima do Leaflet, o que mantém a animação leve mesmo com centenas de aeronaves. Cada silhueta é um traçado SVG gerado a partir das medidas reais do modelo (comprimento, envergadura, fuselagem e motores) e unido num contorno único; o mesmo traçado é usado no canvas (`Path2D`) e nos ícones da interface. Os nomes dos voos que cairiam um em cima do outro são pulados.
-- **Tipo de aeronave:** vem da categoria que o próprio transponder informa (A1 leve, A3 comercial, A5 grande porte, A7 helicóptero, B6 drone…). O modelo (designador ICAO, como `B744`, `AT76` ou `C130`) refina a escolha: quadrimotores, turboélices regionais, transportes militares e helicópteros militares. Quando a categoria não vem, o app tenta pelo modelo e pelo fabricante. A marcação de militar vem da base de aeronaves das redes de receptores.
-- **Interpolação:** cada quadro estima a posição por `velocidade × tempo` no rumo atual, sem arredondar para o pixel. Quando chega um dado novo, a diferença entre o que estava na tela e a posição real some ao longo de 1,5 s.
+- **Dados:** as APIs gratuitas de ADS-B (adsb.fi, airplanes.live, adsb.lol, OpenSky) não liberam CORS, então o navegador não consegue lê-las direto de uma página no GitHub Pages. Um proxy pequeno no **Cloudflare Workers** (`proxy/worker.js`, plano gratuito) faz a consulta, tenta as fontes em sequência e devolve só os campos usados.
+- **Área visível:** as APIs consultam por raio, então o app calcula o círculo que cobre o mapa (até 250 milhas náuticas, cerca de 460 km) e só refaz a busca quando a área muda de verdade, no máximo uma vez a cada 3 s.
+- **Desenho:** os aviões são desenhados num `<canvas>` por cima do Leaflet, o que mantém a animação leve mesmo com centenas de aeronaves. Cada silhueta é um traçado SVG feito a partir das medidas reais do modelo, usado tanto no canvas (`Path2D`) quanto nos ícones da interface.
+- **Interpolação:** cada quadro estima a posição por `velocidade × tempo` no rumo atual. Quando chega um dado novo, a diferença entre o que estava na tela e a posição real some ao longo de 1,5 s, então o avião desliza em vez de pular.
+- **Tipo de aeronave:** vem da categoria informada pelo transponder (A1 leve, A3 comercial, A7 helicóptero…), refinada pelo modelo (`B744`, `AT76`, `C130`…). A marcação de militar vem da base das redes de receptores.
+- **Rota:** vem do adsbdb pelo indicativo e fica guardada no navegador por um dia. Como a base é colaborativa e às vezes está velha, a rota só aparece se o avião estiver num caminho plausível entre origem e destino.
 - **Rastro:** as APIs gratuitas não entregam o histórico do voo, então o app guarda as posições recebidas desde que a página foi aberta (até cerca de 1 hora por avião).
 - **País de registro:** sai do endereço ICAO de 24 bits do transponder, pelas faixas que a ICAO reserva para cada país (o Brasil vai de `E40000` a `E7FFFF`).
-- **Radar de chuva:** quadros de 10 em 10 minutos do RainViewer, sobrepostos ao mapa e atualizados sozinhos.
-- **Dia e noite:** a linha que separa o dia da noite é calculada no navegador a partir da posição do Sol, sem API.
-- **Aeroportos:** uma base enxuta dos ~3.300 aeroportos médios e grandes com voo regular do OurAirports (`assets/dados/aeroportos.json`), carregada só quando usada. Chegadas e partidas são os voos a até 200 km cuja rota cadastrada liga ao aeroporto e confere com a posição.
-- **Rota:** vem do adsbdb pelo indicativo e fica guardada no navegador por um dia, para não repetir consultas. Como a base é colaborativa e às vezes está velha, o app só mostra a rota se o avião estiver num caminho plausível entre origem e destino. O progresso é a distância já voada sobre a soma da voada com a que falta.
+- **Camadas:** o radar de chuva vem do RainViewer, de 10 em 10 minutos; a linha entre dia e noite é calculada no navegador pela posição do Sol; os aeroportos são uma base enxuta dos ~3.300 médios e grandes com voo regular do OurAirports, carregada só quando usada.
 
 ## Como usar
 
@@ -106,7 +107,7 @@ Sempre que o `proxy/worker.js` mudar no repositório, cole a versão nova no Wor
 
 ```
 QueroQuero/
-├── index.html               # estrutura da página, navbar, painéis e popovers
+├── index.html               # estrutura da página: navbar, painéis, popovers e janela Sobre
 ├── style.css                # temas claro e escuro, painéis, folha inferior e versão mobile
 ├── js/                      # código em módulos ES, sem etapa de build
 │   ├── main.js              # ponto de entrada: monta a interface e começa a buscar os voos
@@ -115,14 +116,20 @@ QueroQuero/
 │   ├── estado.js            # aviões recebidos, interpolação e posição exibida
 │   ├── desenho.js           # canvas: aviões, rastros, aeroportos, clique e dica do mouse
 │   ├── aeronaves.js         # silhuetas, grupos e classificação por tipo
+│   ├── cores.js             # cores por altitude conforme o tema e o mapa
+│   ├── mapa.js              # mapa Leaflet e estilos de mapa base
 │   ├── painel.js            # painel do voo: dados, foto, rota, seguir e compartilhar
 │   ├── painel-aeroporto.js  # painel do aeroporto: chegadas e partidas
 │   ├── rotas.js             # rotas do adsbdb, com cache no navegador
+│   ├── aeroportos.js        # base de aeroportos do OurAirports
 │   ├── busca.js             # busca de voos e aeroportos
 │   ├── filtros.js           # filtros por tipo, situação, companhia e altitude
 │   ├── interface.js         # popovers, preferências, tema, camadas, relógio e atalhos
-│   ├── mapa.js              # mapa Leaflet e estilos de mapa base
-│   └── …                    # utilitários, cores, preferências, países, companhias e avisos
+│   ├── prefs.js             # preferências salvas e unidades
+│   ├── companhias.js        # nomes das companhias pelo prefixo do indicativo
+│   ├── paises.js            # país de registro pelo código ICAO
+│   ├── avisos.js            # avisos no topo da tela
+│   └── util.js              # utilitários de DOM, números e distância
 ├── proxy/
 │   └── worker.js            # proxy para o Cloudflare Workers (CORS e fontes)
 ├── assets/
@@ -144,7 +151,7 @@ QueroQuero/
 - Mapa interativo: [Leaflet](https://leafletjs.com)
 - Mapas base: Esri Dark Gray, Light Gray, World Imagery, World Topo e World Street ([Esri](https://www.esri.com), HERE, Garmin, © [colaboradores do OpenStreetMap](https://www.openstreetmap.org/copyright) e comunidade de usuários de SIG)
 
-Desenvolvido com o auxílio do [Claude](https://claude.ai) (Anthropic) na escolha das fontes de dados, no proxy, na interpolação dos aviões, nos ícones por tipo e no redesenho da interface.
+Desenvolvido com o auxílio do [Claude](https://claude.ai) (Anthropic) na escolha das fontes de dados, no proxy, na interpolação dos aviões, nos ícones por tipo, no redesenho da interface e na organização do código em módulos.
 
 ## Licença
 
