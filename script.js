@@ -822,6 +822,7 @@
     painel.classList.remove('expandida');
     document.body.classList.add('com-painel');
     preencherPainel();
+    mostrarFoto(av);
     medirFolha();
     const pos = posicaoExibida(av, Date.now());
     if (centralizar) mapa.setView([pos.lat, pos.lon], Math.max(mapa.getZoom(), 9), { animate: false });
@@ -1012,6 +1013,57 @@
     mostrarRota(av);
   }
   setInterval(() => { if (selecionado && !document.hidden) preencherPainel(); }, 1000);
+
+  // Foto da aeronave pelo Planespotters.net (busca pelo código ICAO; se não houver, pela matrícula).
+  // Regras da API: crédito do fotógrafo ao lado e a miniatura linkando para a página da foto.
+  const fotos = new Map(); // hex → foto | null | Promise
+
+  async function buscarFoto(av) {
+    const api = 'https://api.planespotters.net/pub/photos/';
+    const pedir = async caminho => {
+      const r = await fetch(api + caminho);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
+      return (d.photos || [])[0] || null;
+    };
+    let foto = await pedir('hex/' + av.hex);
+    if (!foto && av.matricula) foto = await pedir('reg/' + encodeURIComponent(av.matricula));
+    if (!foto) return null;
+    const img = foto.thumbnail_large || foto.thumbnail;
+    if (!img || !/^https:\/\//.test(img.src) || !/^https:\/\/www\.planespotters\.net\//.test(foto.link)) return null;
+    return { src: img.src, link: foto.link, fotografo: foto.photographer || 'autor desconhecido' };
+  }
+
+  function mostrarFoto(av) {
+    const fig = $('p-foto');
+    const img = $('p-foto-img');
+    const foto = fotos.get(av.hex);
+    if (foto === undefined) {
+      fig.hidden = false;
+      fig.classList.add('carregando');
+      img.classList.remove('carregada');
+      img.removeAttribute('src');
+      fotos.set(av.hex, buscarFoto(av)
+        .then(f => { fotos.set(av.hex, f); })
+        .catch(() => { fotos.set(av.hex, null); })
+        .finally(() => { if (selecionado === av.hex) mostrarFoto(av); }));
+      return;
+    }
+    if (foto instanceof Promise) return;
+    if (!foto) { fig.hidden = true; return; }
+    fig.hidden = false;
+    fig.classList.remove('carregando');
+    if (img.getAttribute('src') !== foto.src) {
+      img.classList.remove('carregada');
+      img.onload = () => img.classList.add('carregada');
+      img.onerror = () => { fig.hidden = true; };
+      img.src = foto.src;
+    }
+    img.alt = `Foto da aeronave ${av.matricula || av.hex.toUpperCase()}`;
+    $('p-foto-link').href = foto.link;
+    $('p-foto-credito').href = foto.link;
+    $('p-foto-credito').textContent = `Foto: ${foto.fotografo} · Planespotters.net`;
+  }
 
   // Rota pelo adsbdb (via proxy). Só para indicativos de companhia (ex.: GLO1234).
   function mostrarRota(av) {

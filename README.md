@@ -30,6 +30,7 @@ Rastreador de voos em tempo real feito com **HTML, CSS e JavaScript puros**: avi
 - **Tema claro e escuro:** segue o sistema por padrão, com opção de fixar um dos dois; o mapa e a interface trocam juntos
 - **Painel do voo:** indicativo, companhia, tipo, altitude, velocidade, velocidade vertical, rumo, squawk (com alerta de emergência), posição, matrícula, modelo, código ICAO e país de registro
 - **Rota com progresso:** origem, destino, quanto já foi percorrido e quanto falta, quando a rota está cadastrada no adsbdb e confere com a posição do avião; quando não há rota confiável, o painel diz isso em vez de inventar
+- **Foto da aeronave** no painel, do Planespotters.net, com o crédito do fotógrafo
 - **Rastro recente** desenhado no mapa, colorido pela altitude de cada trecho
 - **Seguir:** o mapa acompanha o avião selecionado
 - **Compartilhar:** gera um link que abre o mapa já com o voo selecionado
@@ -103,6 +104,7 @@ QueroQuero/
 
 - Dados de voo: [adsb.fi](https://adsb.fi), com [airplanes.live](https://airplanes.live) e [adsb.lol](https://adsb.lol) como reserva, todos mantidos por redes de receptores voluntários
 - Rotas e companhias: [adsbdb](https://www.adsbdb.com)
+- Fotos das aeronaves: [Planespotters.net](https://www.planespotters.net), com o crédito de cada fotógrafo no painel
 - Mapa interativo: [Leaflet](https://leafletjs.com)
 - Mapas base: Esri World Dark Gray Canvas e World Light Gray Canvas ([Esri](https://www.esri.com), HERE, Garmin, © [colaboradores do OpenStreetMap](https://www.openstreetmap.org/copyright) e comunidade de usuários de SIG)
 

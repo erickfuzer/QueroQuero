@@ -421,6 +421,23 @@ svg .cheio { fill: currentColor; stroke: none; }
 .etiqueta.militar { background: color-mix(in srgb, var(--militar) 18%, transparent); color: var(--militar); }
 .etiqueta.alerta { background: color-mix(in srgb, var(--perigo) 18%, transparent); color: var(--perigo); }
 
+/* Foto da aeronave */
+.p-foto { margin: 14px 0 0; }
+.p-foto-imagem {
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--campo);
+}
+.p-foto img { display: block; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.25s; }
+.p-foto img.carregada { opacity: 1; }
+.p-foto.carregando .p-foto-imagem { animation: piscar 1.2s ease-in-out infinite; }
+@keyframes piscar { 50% { opacity: 0.55; } }
+.p-foto figcaption { margin-top: 5px; color: var(--suave); font-size: 11px; text-align: right; }
+.p-foto figcaption a { color: inherit; text-decoration: none; }
+.p-foto figcaption a:hover { color: var(--texto); text-decoration: underline; }
+
 /* Rota */
 .p-rota { margin-top: 14px; padding: 14px; border-radius: 12px; background: var(--campo); }
 .r-pontos { display: flex; justify-content: space-between; gap: 12px; }
@@ -645,6 +662,7 @@ svg .cheio { fill: currentColor; stroke: none; }
   .p-titulo h2 { font-size: 18px; }
 
   /* Estado compacto: só o essencial */
+  .painel:not(.expandida) .p-foto,
   .painel:not(.expandida) .p-etiquetas,
   .painel:not(.expandida) .r-dist,
   .painel:not(.expandida) .r-nota,
@@ -659,6 +677,6 @@ svg .cheio { fill: currentColor; stroke: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .painel, .popover, .aviso { animation: none; }
+  .painel, .popover, .aviso, .p-foto-imagem { animation: none !important; }
   .ponto { animation: none; }
 }
