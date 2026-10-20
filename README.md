@@ -80,19 +80,20 @@ Se preferir usar o Git:
 git clone https://github.com/erickfuzer/QueroQuero.git
 ```
 
-### Publicando o proxy de dados
+A versão online e a cópia aberta direto do `index.html` usam o proxy do projeto, então funcionam sem configurar nada.
 
-O app precisa do proxy no ar para receber os voos. Leva uns 2 minutos e é gratuito (100 mil requisições por dia):
+### Publicando o seu próprio proxy
 
-1. Crie uma conta em [dash.cloudflare.com](https://dash.cloudflare.com) e escolha `erickfuzer` como subdomínio do `workers.dev`
-2. Vá em **Workers & Pages → Create → Worker**, dê o nome `queroquero` e clique em **Deploy**
-3. Clique em **Edit code**, troque o conteúdo pelo de `proxy/worker.js` e clique em **Deploy** de novo
+Só é preciso se você publicar a sua cópia em outro endereço (um fork no seu GitHub Pages, por exemplo), porque o proxy do projeto só atende o endereço oficial, `localhost` e o arquivo aberto do disco. É gratuito (100 mil requisições por dia) e leva uns 2 minutos:
 
-Sempre que o `proxy/worker.js` mudar no repositório, repita o passo 3 para o Worker ficar igual.
+1. Crie uma conta em [dash.cloudflare.com](https://dash.cloudflare.com) e escolha um subdomínio para o `workers.dev` (o nome é seu, por exemplo o seu usuário)
+2. Vá em **Workers & Pages → Create → Worker**, dê um nome (por exemplo `queroquero`) e clique em **Deploy**
+3. Clique em **Edit code**, cole o conteúdo de `proxy/worker.js`, acrescente o endereço do seu site em `ORIGENS` (por exemplo `'https://seu-usuario.github.io'`) e clique em **Deploy** de novo
+4. No início do `script.js`, troque `proxy` pelo endereço do seu Worker, que fica assim: `https://queroquero.seu-subdominio.workers.dev`
 
-O endereço fica `https://queroquero.erickfuzer.workers.dev`, que já é o configurado no `script.js`. Se usar outro nome, troque `proxy` no início do `script.js` ou passe pela URL: `index.html?proxy=https://seu-proxy.workers.dev`.
+Para testar um proxy sem mexer no código, passe o endereço pela URL: `index.html?proxy=https://queroquero.seu-subdominio.workers.dev`.
 
-> O proxy só atende o GitHub Pages do projeto, `localhost` e o `index.html` aberto direto do disco. Para publicar em outro domínio, acrescente-o em `ORIGENS` no `worker.js`.
+Sempre que o `proxy/worker.js` mudar no repositório, cole a versão nova no Worker para ele ficar igual.
 
 ## Estrutura
 
