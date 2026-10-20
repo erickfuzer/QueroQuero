@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Quero-Quero · Radar de voos</title>
   <meta name="description" content="Rastreador de voos em tempo real feito em HTML, CSS e JavaScript puros: aviões no mapa com rumo, altitude, velocidade, rastro e rota.">
-  <meta name="theme-color" content="#0d1117">
+  <meta name="theme-color" content="#15181c">
 
   <!-- Ícone da aba: emoji em SVG, sem precisar de arquivo de imagem -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50' y='50' font-size='80' text-anchor='middle' dominant-baseline='central'>✈️</text></svg>">
@@ -32,10 +32,10 @@
     })();
   </script>
 
-  <!-- Fontes: Inter para a interface, JetBrains Mono para indicativos e códigos -->
+  <!-- Fontes: IBM Plex Sans na interface e IBM Plex Mono em indicativos e códigos -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
         integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous">
@@ -44,16 +44,14 @@
 <body>
   <div id="mapa" aria-label="Mapa com os aviões"></div>
 
-  <!-- Barra superior: marca, busca, filtros e tema -->
-  <header class="barra">
+  <!-- Navbar: marca, busca, situação ao vivo, filtros, tema e código-fonte -->
+  <header class="navbar">
     <a class="marca" href="./" aria-label="Quero-Quero, recarregar o radar">
-      <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
-        <rect width="32" height="32" rx="9" class="logo-fundo"/>
-        <circle cx="16" cy="16" r="9" class="logo-traco"/>
-        <circle cx="16" cy="16" r="4.5" class="logo-traco fraco"/>
-        <path d="M16 16 L22.4 9.6 A9 9 0 0 1 25 16 Z" class="logo-varredura"/>
-        <circle cx="16" cy="16" r="1.6" class="logo-ponto"/>
-        <circle cx="20.5" cy="12.4" r="1.4" class="logo-ponto"/>
+      <!-- Marca provisória: será trocada pelo rosto do quero-quero -->
+      <svg class="logo" viewBox="4 6 56 54" aria-hidden="true">
+        <path class="logo-corpo" d="M10.2 20.4 L15 19.4 C15.6 16.4 17.8 14.6 20.6 14.6 C23.2 14.6 25 16.4 25.3 18.9 C25.5 20.8 24.9 22.4 24 23.8 C29 24.4 34.4 26.8 39.4 30.4 C44.4 34 49.4 37.8 56 41.8 L54.8 43.2 C48.6 41.2 42.8 40 38.4 40.2 C34.2 41.2 29.8 41.8 25.4 41 C19.8 39.8 17 35.4 17.4 30.4 C17.6 27.6 18.4 25.6 19.4 24.2 C17.4 23.4 16 22.4 15 21.4 Z M23.6 16.2 C26.4 13.6 30.4 12.2 35.2 12.4 L35.3 13.1 C31 13.4 27.6 14.6 24.8 17.4 Z M24 17 C27 15.2 30.4 14.6 33.6 15 L33.5 15.6 C30.6 15.6 27.6 16.4 25 18 Z"/>
+        <path class="logo-pernas" d="M27.6 40.8 L26.4 52.4 L23.4 56.4 M26.4 52.4 L28.6 56.8 M31.6 41.2 L32.4 52.2 L29.8 56.6 M32.4 52.2 L35.2 56.4"/>
+        <circle class="logo-olho" cx="20.4" cy="18.4" r="1.7"/>
       </svg>
       <span class="marca-nome">Quero-Quero</span>
     </a>
@@ -66,7 +64,11 @@
       <ul id="sugestoes" class="sugestoes" role="listbox" hidden></ul>
     </div>
 
-    <div class="barra-acoes">
+    <div class="nav-acoes">
+      <div id="status" class="status carregando">
+        <span class="ponto" aria-hidden="true"></span>
+        <span id="status-texto">Conectando…</span>
+      </div>
       <button id="bt-filtros" class="botao" type="button" aria-expanded="false" aria-controls="filtros">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
         <span class="rotulo">Filtros</span>
@@ -75,6 +77,9 @@
       <button id="bt-tema" class="botao icone" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-tema" title="Tema do mapa" aria-label="Tema do mapa">
         <svg viewBox="0 0 24 24" aria-hidden="true"><use id="icone-tema" href="#i-auto"/></svg>
       </button>
+      <a class="botao icone codigo-fonte" href="https://github.com/erickfuzer/QueroQuero" target="_blank" rel="noopener" title="Código-fonte no GitHub" aria-label="Código-fonte no GitHub">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="cheio" d="M12 2.5a9.5 9.5 0 0 0-3 18.5c.5.1.7-.2.7-.5v-1.7c-2.7.6-3.2-1.2-3.2-1.2-.4-1.1-1.1-1.4-1.1-1.4-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.3-2.1-.2-4.4-1.1-4.4-4.7 0-1 .4-1.9 1-2.6-.1-.2-.4-1.2.1-2.5 0 0 .8-.3 2.6 1a9 9 0 0 1 4.8 0c1.8-1.3 2.6-1 2.6-1 .5 1.3.2 2.3.1 2.5.6.7 1 1.6 1 2.6 0 3.7-2.3 4.5-4.4 4.7.3.3.6.9.6 1.8v2.6c0 .3.2.6.7.5A9.5 9.5 0 0 0 12 2.5z"/></svg>
+      </a>
     </div>
 
     <div id="menu-tema" class="popover menu" role="menu" aria-label="Tema do mapa" hidden>
@@ -169,16 +174,12 @@
     </div>
   </aside>
 
-  <!-- Rodapé: situação da conexão e legenda de altitude -->
-  <div id="status" class="status">
-    <span class="ponto" aria-hidden="true"></span>
-    <span id="status-texto">Conectando…</span>
-  </div>
+  <!-- Legenda de cores por altitude -->
   <div class="legenda" aria-label="Legenda de cores por altitude">
     <span class="legenda-titulo">Altitude</span>
     <div class="legenda-corpo">
       <div class="escala" aria-hidden="true"></div>
-      <div class="escala-rotulos" aria-hidden="true"><span>solo</span><span>10 mil</span><span>20 mil</span><span>30 mil</span><span>40 mil pés</span></div>
+      <div class="escala-rotulos" aria-hidden="true"><span>solo</span><span>10 mil</span><span>20 mil</span><span>30 mil</span><span>40 mil ft</span></div>
     </div>
   </div>
 

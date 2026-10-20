@@ -133,6 +133,8 @@
   const CARGUEIROS = lista('C130 C30J E390 KC39 A400 C295 CN35 C27J C160 AN12 AN26 AN32 IL76 C17');
   const TURBOELICES = lista('AT43 AT44 AT45 AT46 AT72 AT73 AT75 AT76 DH8A DH8B DH8C DH8D E110 E120 SF34 JS31 JS32 JS41 D328 B190 F50 L410 C212');
   const CACAS = lista('F5 F15 F16 F18H F18S F22 F35 EUFI RFAL T38 A10 HAWK L39');
+  // Jatos executivos leves: o transponder costuma informar categoria A1 (leve), mas são jatos
+  const JATOS_EXECUTIVOS = lista('C500 C501 C510 C525 C25A C25B C25C C25M C550 C560 C56X C680 C68A C700 C750 E50P E55P E545 E550 HDJT EA50 SF50 PC24 LJ31 LJ35 LJ40 LJ45 LJ60 LJ75 PRM1 BE40 H25B G150 G280 CL30 CL35 FA10 FA20 FA50 F900 F2TH FA7X GLF4 GLF5 GLF6 GLEX GL5T GL7T');
   const FABRICANTES_LEVES = /\b(CESSNA|PIPER|BEECH|CIRRUS|DIAMOND|MOONEY|TECNAM|ROBIN|SOCATA|NEIVA|AERO BOERO|EXTRA|VANS|GRUMMAN AMERICAN)\b/i;
 
   function classificar(a) {
@@ -146,6 +148,7 @@
     else if (QUADRIMOTORES.has(tipo)) forma = 'jumbo';
     else if (cat === 'A5' || GRANDES.has(tipo)) forma = 'pesado';
     else if (TURBOELICES.has(tipo)) forma = 'turboelice';
+    else if (JATOS_EXECUTIVOS.has(tipo)) forma = 'executivo';
     else if (cat === 'A3' || cat === 'A4') forma = 'comercial';
     else if (cat === 'A2') forma = 'executivo';
     else if (cat === 'A1' || cat === 'B4') forma = 'leve';
@@ -162,7 +165,7 @@
         turboelice: 'executivo', executivo: 'executivo', leve: 'leve',
         helicoptero: 'helicoptero', helicoptero_militar: 'helicoptero', caca: 'militar',
       }[forma] || 'outros';
-    const conhecido = [HELICOPTEROS, CACAS, CARGUEIROS, QUADRIMOTORES, GRANDES, TURBOELICES].some(l => l.has(tipo));
+    const conhecido = [HELICOPTEROS, CACAS, CARGUEIROS, QUADRIMOTORES, GRANDES, TURBOELICES, JATOS_EXECUTIVOS].some(l => l.has(tipo));
     return { forma, grupo, militar, semCategoria: !cat && !conhecido && !FABRICANTES_LEVES.test(a.desc || '') };
   }
 
@@ -233,10 +236,10 @@
 
   // Cores do desenho no canvas que mudam com o tema
   const TINTAS = {
-    escuro: { contorno: 'rgba(0, 0, 0, 0.7)', halo: 'rgba(255, 255, 255, 0.9)', haloFundo: 'rgba(255, 255, 255, 0.12)',
-              militar: 'rgba(255, 255, 255, 0.95)', texto: 'rgba(231, 236, 242, 0.9)', textoForte: '#ffffff', textoFundo: 'rgba(13, 17, 23, 0.9)' },
-    claro: { contorno: 'rgba(0, 0, 0, 0.55)', halo: 'rgba(17, 24, 39, 0.85)', haloFundo: 'rgba(17, 24, 39, 0.08)',
-             militar: 'rgba(17, 24, 39, 0.95)', texto: 'rgba(17, 24, 39, 0.85)', textoForte: '#111827', textoFundo: 'rgba(255, 255, 255, 0.92)' },
+    escuro: { contorno: 'rgba(0, 0, 0, 0.7)', halo: 'rgba(224, 87, 77, 0.95)', haloFundo: 'rgba(224, 87, 77, 0.16)', mouse: 'rgba(255, 255, 255, 0.1)',
+              militar: 'rgba(255, 255, 255, 0.95)', texto: 'rgba(232, 230, 225, 0.88)', textoForte: '#ffffff', textoFundo: 'rgba(21, 24, 28, 0.9)', icone: '#e8e6e1' },
+    claro: { contorno: 'rgba(0, 0, 0, 0.55)', halo: 'rgba(200, 56, 47, 0.95)', haloFundo: 'rgba(200, 56, 47, 0.1)', mouse: 'rgba(28, 31, 35, 0.07)',
+             militar: 'rgba(28, 31, 35, 0.95)', texto: 'rgba(28, 31, 35, 0.85)', textoForte: '#1c1f23', textoFundo: 'rgba(255, 255, 255, 0.92)', icone: '#1c1f23' },
   };
 
   // ───────────────────────────── Mapa ─────────────────────────────
@@ -316,7 +319,7 @@
     for (const [t, camada] of Object.entries(camadas)) {
       if (t === tema) camada.addTo(mapa); else camada.remove();
     }
-    document.querySelector('meta[name="theme-color"]').content = tema === 'escuro' ? '#0d1117' : '#ffffff';
+    document.querySelector('meta[name="theme-color"]').content = tema === 'escuro' ? '#15181c' : '#ffffff';
     const escala = ESCALAS[tema].map(([alt, c]) => `rgb(${c.join(', ')}) ${(alt / ALT_SEM_LIMITE) * 100}%`).join(', ');
     document.documentElement.style.setProperty('--escala', `linear-gradient(90deg, ${escala})`);
     $('icone-tema').setAttribute('href', ICONE_TEMA[preferenciaTema]);
@@ -670,7 +673,7 @@
     }
 
     const rotulos = zoom >= 9;
-    ctx.font = '600 11px "JetBrains Mono", ui-monospace, monospace';
+    ctx.font = '600 11px "IBM Plex Mono", ui-monospace, monospace';
     ctx.textBaseline = 'middle';
 
     const pendentes = [];
@@ -712,7 +715,7 @@
     if (destaque) {
       ctx.beginPath();
       ctx.arc(p.x, p.y, destaque === 'selecionado' ? 21 : 16, 0, Math.PI * 2);
-      ctx.fillStyle = tinta.haloFundo;
+      ctx.fillStyle = destaque === 'selecionado' ? tinta.haloFundo : tinta.mouse;
       ctx.fill();
       if (destaque === 'selecionado') {
         ctx.strokeStyle = tinta.halo;
@@ -849,12 +852,13 @@
 
   // Área do mapa que não fica escondida atrás do painel
   function areaLivre() {
+    // O mapa começa abaixo da navbar; no computador o painel ocupa a lateral esquerda
     const tam = mapa.getSize();
-    const topo = $('busca').getBoundingClientRect().bottom + 8;
+    const topo = 8;
     if (painel.hidden) return { x1: 0, y1: topo, x2: tam.x, y2: tam.y };
     return celular.matches
       ? { x1: 0, y1: topo, x2: tam.x, y2: tam.y - painel.offsetHeight }
-      : { x1: painel.offsetLeft + painel.offsetWidth + 12, y1: topo, x2: tam.x - 60, y2: tam.y };
+      : { x1: painel.offsetWidth + 12, y1: topo, x2: tam.x - 60, y2: tam.y - 50 };
   }
 
   // Se o avião ficou atrás do painel, move o mapa para ele aparecer
@@ -967,7 +971,7 @@
     const icone = $('p-forma');
     icone.setAttribute('d', forma.d);
     icone.setAttribute('fill', cor);
-    icone.setAttribute('transform', forma.semRumo ? '' : `rotate(${Math.round(av.rumo)})`);
+
 
     texto('p-indicativo', nomeDoVoo(av));
     const rota = rotas.get(av.indicativo.toUpperCase());
@@ -1240,7 +1244,7 @@
 
   // Filtro por tipo: um botão por grupo, com o ícone do grupo
   function montarTipos() {
-    const cor = corAltitude(30000, false);
+    const cor = TINTAS[tema].icone;
     $('tipos').replaceChildren(...GRUPOS.map(g => {
       const b = document.createElement('button');
       b.type = 'button';
