@@ -25,7 +25,7 @@ const FONTES = [
 
 // Campos repassados ao app (o resto é descartado para economizar banda)
 const CAMPOS = ['hex', 'flight', 'r', 't', 'desc', 'category', 'alt_baro', 'alt_geom', 'gs', 'track',
-  'true_heading', 'baro_rate', 'geom_rate', 'squawk', 'lat', 'lon', 'seen_pos', 'seen'];
+  'true_heading', 'baro_rate', 'geom_rate', 'squawk', 'lat', 'lon', 'seen_pos', 'seen', 'dbFlags'];
 
 export default {
   async fetch(req, env, ctx) {
