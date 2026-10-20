@@ -27,15 +27,20 @@ Rastreador de voos em tempo real feito com **HTML, CSS e JavaScript puros**: avi
   - caça com a silhueta do **F-39 Gripen** e transporte militar com a do **KC-390**, em homenagem à aviação brasileira
   - planador, drone, balão e veículo em solo
   - **militares** ganham um contorno de destaque
-- **Tema claro e escuro:** segue o sistema por padrão, com opção de fixar um dos dois; o mapa e a interface trocam juntos
+- **Tema claro e escuro** na interface, seguindo o sistema por padrão
+- **Seletor de mapa:** escuro, claro, satélite, relevo e ruas, independente do tema da interface
+- **Camadas:** radar de chuva das últimas 2 horas (com animação), aeroportos, sombra de dia e noite e rastro de todos os aviões
+- **Aeroportos:** clique num aeroporto (ou busque por "GRU", "Guarulhos") para ver os voos chegando e saindo na área do mapa
 - **Painel do voo:** indicativo, companhia, tipo, altitude, velocidade, velocidade vertical, rumo, squawk (com alerta de emergência), posição, matrícula, modelo, código ICAO e país de registro
 - **Rota com progresso:** origem, destino, quanto já foi percorrido e quanto falta, quando a rota está cadastrada no adsbdb e confere com a posição do avião; quando não há rota confiável, o painel diz isso em vez de inventar
 - **Foto da aeronave** no painel, do Planespotters.net, com o crédito do fotógrafo
 - **Rastro recente** desenhado no mapa, colorido pela altitude de cada trecho
 - **Seguir:** o mapa acompanha o avião selecionado
 - **Compartilhar:** gera um link que abre o mapa já com o voo selecionado
-- **Busca** por indicativo, matrícula ou código ICAO, com sugestões e atalho <kbd>/</kbd>
-- **Filtros** por tipo de aeronave e por altitude mínima e máxima, com legenda de cores
+- **Busca** por indicativo, matrícula, código ICAO ou aeroporto, com sugestões e atalho <kbd>/</kbd>
+- **Filtros** por tipo de aeronave, companhia, situação (no ar ou em solo) e altitude, com atalhos para só militares, só helicópteros e emergências
+- **Preferências:** unidades (pés ou metros, nós ou km/h) e nomes dos voos no mapa, lembradas pelo navegador
+- **Relógio UTC (Zulu)** na barra, o horário usado na aviação
 - **Sua localização** no início (com permissão) e no botão de mira; sem ela, o mapa abre sobre São Paulo
 - **Avisos amigáveis** quando o limite gratuito estoura ou a fonte de dados falha, com nova tentativa automática
 - **Economia:** busca só a área visível do mapa, só refaz a busca quando a área muda de verdade e pausa tudo quando a aba fica oculta
@@ -58,6 +63,9 @@ Rastreador de voos em tempo real feito com **HTML, CSS e JavaScript puros**: avi
 - **Interpolação:** cada quadro estima a posição por `velocidade × tempo` no rumo atual, sem arredondar para o pixel. Quando chega um dado novo, a diferença entre o que estava na tela e a posição real some ao longo de 1,5 s.
 - **Rastro:** as APIs gratuitas não entregam o histórico do voo, então o app guarda as posições recebidas desde que a página foi aberta (até cerca de 1 hora por avião).
 - **País de registro:** sai do endereço ICAO de 24 bits do transponder, pelas faixas que a ICAO reserva para cada país (o Brasil vai de `E40000` a `E7FFFF`).
+- **Radar de chuva:** quadros de 10 em 10 minutos do RainViewer, sobrepostos ao mapa e atualizados sozinhos.
+- **Dia e noite:** a linha que separa o dia da noite é calculada no navegador a partir da posição do Sol, sem API.
+- **Aeroportos:** uma base enxuta dos ~3.300 aeroportos médios e grandes com voo regular do OurAirports (`assets/dados/aeroportos.json`), carregada só quando usada. Chegadas e partidas são os voos da área cuja rota cadastrada liga ao aeroporto e confere com a posição.
 - **Rota:** vem do adsbdb pelo indicativo. Como a base é colaborativa e às vezes está velha, o app só mostra a rota se o avião estiver num caminho plausível entre origem e destino. O progresso é a distância já voada sobre a soma da voada com a que falta.
 
 ## Como usar
@@ -97,6 +105,7 @@ QueroQuero/
 │   └── worker.js     # proxy para o Cloudflare Workers (CORS, fontes e cache)
 ├── assets/
 │   ├── logo/         # rosto do quero-quero em SVG (colorido, claro e escuro) e o gerador
+│   ├── dados/        # aeroportos.json, extraído do OurAirports
 │   └── *.png         # prints do README e da prévia de link
 ├── LICENSE
 └── README.md
@@ -108,8 +117,10 @@ QueroQuero/
 - Rotas e companhias: [adsbdb](https://www.adsbdb.com)
 - Fotos das aeronaves: [Planespotters.net](https://www.planespotters.net), com o crédito de cada fotógrafo no painel
 - Logotipo: rosto do quero-quero desenhado para o projeto a partir de uma foto de referência
+- Radar de chuva: [RainViewer](https://www.rainviewer.com)
+- Aeroportos: [OurAirports](https://ourairports.com) (domínio público)
 - Mapa interativo: [Leaflet](https://leafletjs.com)
-- Mapas base: Esri World Dark Gray Canvas e World Light Gray Canvas ([Esri](https://www.esri.com), HERE, Garmin, © [colaboradores do OpenStreetMap](https://www.openstreetmap.org/copyright) e comunidade de usuários de SIG)
+- Mapas base: Esri Dark Gray, Light Gray, World Imagery, World Topo e World Street ([Esri](https://www.esri.com), HERE, Garmin, © [colaboradores do OpenStreetMap](https://www.openstreetmap.org/copyright) e comunidade de usuários de SIG)
 
 Desenvolvido com o auxílio do [Claude](https://claude.ai) (Anthropic) na escolha das fontes de dados, no proxy, na interpolação dos aviões, nos ícones por tipo e no redesenho da interface.
 

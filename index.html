@@ -82,9 +82,8 @@
 
     <div class="busca" role="search">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
-      <input id="busca" type="search" placeholder="Buscar voo, matrícula ou ICAO" autocomplete="off" spellcheck="false"
-             aria-label="Buscar voo por indicativo, matrícula ou código ICAO" aria-controls="sugestoes" aria-autocomplete="list">
-      <kbd class="atalho" aria-hidden="true">/</kbd>
+      <input id="busca" type="search" placeholder="Buscar voo, matrícula ou aeroporto" autocomplete="off" spellcheck="false"
+             aria-label="Buscar voo por indicativo, matrícula ou código ICAO, ou um aeroporto" aria-controls="sugestoes" aria-autocomplete="list">
       <ul id="sugestoes" class="sugestoes" role="listbox" hidden></ul>
     </div>
 
@@ -93,35 +92,64 @@
         <span class="ponto" aria-hidden="true"></span>
         <span id="status-texto">Conectando…</span>
       </div>
+      <span id="relogio" class="relogio" title="Hora UTC (Zulu), a usada na aviação">--:--Z</span>
+      <span class="divisor" aria-hidden="true"></span>
+      <button id="bt-mapa" class="botao" type="button" aria-expanded="false" aria-controls="mapas">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 21 8l-9 4.5L3 8z"/><path d="m3 12 9 4.5 9-4.5M3 16l9 4.5 9-4.5"/></svg>
+        <span class="rotulo">Mapa</span>
+      </button>
       <button id="bt-filtros" class="botao" type="button" aria-expanded="false" aria-controls="filtros">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
         <span class="rotulo">Filtros</span>
         <span id="filtros-ativos" class="selo" hidden></span>
       </button>
-      <button id="bt-tema" class="botao icone" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-tema" title="Tema do mapa" aria-label="Tema do mapa">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><use id="icone-tema" href="#i-auto"/></svg>
+      <button id="bt-prefs" class="botao icone" type="button" aria-expanded="false" aria-controls="prefs" title="Preferências" aria-label="Preferências">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.6-2-3.4-2.4 1a7.5 7.5 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5A7.5 7.5 0 0 0 7 6.5l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 3l-2 1.6 2 3.4 2.4-1a7.5 7.5 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.5 7.5 0 0 0 2.6-1.5l2.4 1 2-3.4z"/></svg>
+      </button>
+      <button id="bt-sobre" class="botao icone sobre" type="button" title="Sobre o Quero-Quero" aria-label="Sobre o Quero-Quero" aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r="1.1" class="cheio"/></svg>
       </button>
       <a class="botao icone codigo-fonte" href="https://github.com/erickfuzer/QueroQuero" target="_blank" rel="noopener" title="Código-fonte no GitHub" aria-label="Código-fonte no GitHub">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path class="cheio" d="M12 2.5a9.5 9.5 0 0 0-3 18.5c.5.1.7-.2.7-.5v-1.7c-2.7.6-3.2-1.2-3.2-1.2-.4-1.1-1.1-1.4-1.1-1.4-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.3-2.1-.2-4.4-1.1-4.4-4.7 0-1 .4-1.9 1-2.6-.1-.2-.4-1.2.1-2.5 0 0 .8-.3 2.6 1a9 9 0 0 1 4.8 0c1.8-1.3 2.6-1 2.6-1 .5 1.3.2 2.3.1 2.5.6.7 1 1.6 1 2.6 0 3.7-2.3 4.5-4.4 4.7.3.3.6.9.6 1.8v2.6c0 .3.2.6.7.5A9.5 9.5 0 0 0 12 2.5z"/></svg>
       </a>
     </div>
 
-    <div id="menu-tema" class="popover menu" role="menu" aria-label="Tema do mapa" hidden>
-      <button type="button" role="menuitemradio" data-tema="auto"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-auto"/></svg>Automático</button>
-      <button type="button" role="menuitemradio" data-tema="claro"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-sol"/></svg>Claro</button>
-      <button type="button" role="menuitemradio" data-tema="escuro"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-lua"/></svg>Escuro</button>
-    </div>
+    <!-- Mapa: estilo do mapa base e camadas sobrepostas -->
+    <section id="mapas" class="popover mapas" aria-label="Mapa" hidden>
+      <h2>Mapa</h2>
+      <div id="estilos" class="estilos"></div>
+      <h3>Camadas</h3>
+      <div class="camadas">
+        <label class="opcao"><span><b>Radar de chuva</b><small>Últimas 2 horas, do RainViewer</small></span><input id="cam-radar" type="checkbox" role="switch"></label>
+        <label class="opcao"><span><b>Aeroportos</b><small>Clique num aeroporto para ver chegadas e partidas</small></span><input id="cam-aeroportos" type="checkbox" role="switch"></label>
+        <label class="opcao"><span><b>Dia e noite</b><small>Sombra onde já é noite agora</small></span><input id="cam-noite" type="checkbox" role="switch"></label>
+        <label class="opcao"><span><b>Rastro de todos os aviões</b><small>Não só do voo selecionado</small></span><input id="cam-rastros" type="checkbox" role="switch"></label>
+      </div>
+    </section>
 
     <section id="filtros" class="popover filtros" aria-label="Filtros" hidden>
       <div class="pop-cab">
         <h2>Filtros</h2>
         <button id="limpar-filtros" class="link" type="button">Limpar</button>
       </div>
+      <div class="atalhos" id="atalhos">
+        <button type="button" class="atalho-filtro" data-atalho="militares">Só militares</button>
+        <button type="button" class="atalho-filtro" data-atalho="helicopteros">Só helicópteros</button>
+        <button type="button" class="atalho-filtro" data-atalho="emergencias">Emergências</button>
+      </div>
+      <h3>Situação</h3>
+      <div class="segmentado" id="situacao" role="radiogroup" aria-label="Situação">
+        <button type="button" role="radio" data-situacao="todos">Todos</button>
+        <button type="button" role="radio" data-situacao="ar">No ar</button>
+        <button type="button" role="radio" data-situacao="solo">Em solo</button>
+      </div>
       <h3>Tipo de aeronave</h3>
       <div id="tipos" class="tipos"></div>
+      <h3>Companhia <small id="companhias-nota">nenhuma marcada mostra todas</small></h3>
+      <div id="companhias" class="companhias"></div>
       <h3>Altitude</h3>
       <div class="escala" aria-hidden="true"></div>
-      <div class="escala-rotulos" aria-hidden="true"><span>solo</span><span>10 mil</span><span>20 mil</span><span>30 mil</span><span>40 mil+</span></div>
+      <div class="escala-rotulos rotulos-altitude" aria-hidden="true"></div>
       <div class="faixa">
         <label>Mínima <output id="min-saida">solo</output>
           <input id="alt-min" type="range" min="0" max="45000" step="1000" value="0">
@@ -130,6 +158,34 @@
           <input id="alt-max" type="range" min="0" max="45000" step="1000" value="45000">
         </label>
       </div>
+    </section>
+
+    <!-- Preferências: tema, unidades e nomes no mapa -->
+    <section id="prefs" class="popover prefs" aria-label="Preferências" hidden>
+      <h2>Preferências</h2>
+      <h3>Tema da interface</h3>
+      <div class="segmentado" data-pref="tema" role="radiogroup" aria-label="Tema">
+        <button type="button" role="radio" data-valor="auto">Automático</button>
+        <button type="button" role="radio" data-valor="claro">Claro</button>
+        <button type="button" role="radio" data-valor="escuro">Escuro</button>
+      </div>
+      <h3>Altitude</h3>
+      <div class="segmentado" data-pref="altitude" role="radiogroup" aria-label="Unidade de altitude">
+        <button type="button" role="radio" data-valor="ft">Pés (ft)</button>
+        <button type="button" role="radio" data-valor="m">Metros (m)</button>
+      </div>
+      <h3>Velocidade</h3>
+      <div class="segmentado" data-pref="velocidade" role="radiogroup" aria-label="Unidade de velocidade">
+        <button type="button" role="radio" data-valor="kt">Nós (kt)</button>
+        <button type="button" role="radio" data-valor="kmh">km/h</button>
+      </div>
+      <h3>Nomes dos voos no mapa</h3>
+      <div class="segmentado" data-pref="nomes" role="radiogroup" aria-label="Nomes dos voos no mapa">
+        <button type="button" role="radio" data-valor="auto">Com zoom</button>
+        <button type="button" role="radio" data-valor="sempre">Sempre</button>
+        <button type="button" role="radio" data-valor="nunca">Nunca</button>
+      </div>
+      <button id="link-sobre" class="link link-sobre" type="button">Sobre o Quero-Quero</button>
     </section>
   </header>
 
@@ -198,21 +254,76 @@
     </div>
   </aside>
 
+  <!-- Painel do aeroporto: chegadas e partidas dos voos na área -->
+  <aside id="painel-aero" class="painel painel-aero expandida" aria-label="Detalhes do aeroporto" hidden>
+    <header class="p-cab">
+      <div class="p-icone aero-icone" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 6.5v11M6.5 12h11"/></svg>
+      </div>
+      <div class="p-titulo">
+        <h2 id="a-codigo">–</h2>
+        <p id="a-nome"></p>
+      </div>
+      <div class="p-botoes">
+        <button id="bt-fechar-aero" class="botao icone" type="button" title="Fechar" aria-label="Fechar painel do aeroporto">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>
+        </button>
+      </div>
+    </header>
+    <dl class="p-lista a-info">
+      <div><dt>Cidade</dt><dd id="a-cidade">–</dd></div>
+      <div><dt>Códigos</dt><dd id="a-codigos" class="codigo">–</dd></div>
+    </dl>
+    <h3 class="a-titulo">Chegando <span id="a-n-chegando"></span></h3>
+    <ul id="a-chegando" class="a-voos"></ul>
+    <h3 class="a-titulo">Saindo <span id="a-n-saindo"></span></h3>
+    <ul id="a-saindo" class="a-voos"></ul>
+    <p id="a-nota" class="a-nota"></p>
+  </aside>
+
+  <!-- Radar de chuva: horário do quadro e animação -->
+  <div id="radar-controle" class="radar-controle" hidden>
+    <button id="bt-radar-play" class="botao icone" type="button" title="Animar as últimas 2 horas" aria-label="Animar as últimas 2 horas">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path id="radar-icone" class="cheio" d="M8 5.5v13l10.5-6.5z"/></svg>
+    </button>
+    <span>Chuva</span>
+    <span id="radar-hora" class="radar-hora">--:--Z</span>
+  </div>
+
+  <!-- Sobre o projeto -->
+  <dialog id="sobre" class="sobre-janela" aria-labelledby="sobre-titulo">
+    <header>
+      <h2 id="sobre-titulo">Quero-Quero</h2>
+      <button id="bt-fechar-sobre" class="botao icone" type="button" aria-label="Fechar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>
+      </button>
+    </header>
+    <p>Rastreador de voos em tempo real feito com HTML, CSS e JavaScript puros, sem framework e sem etapa de build. Os aviões chegam a cada 10 segundos e se movem de forma contínua entre uma atualização e outra.</p>
+    <h3>Fontes</h3>
+    <ul>
+      <li><b>Voos:</b> <a href="https://adsb.fi" target="_blank" rel="noopener">adsb.fi</a>, com <a href="https://airplanes.live" target="_blank" rel="noopener">airplanes.live</a> e <a href="https://adsb.lol" target="_blank" rel="noopener">adsb.lol</a> de reserva, redes de receptores voluntários de ADS-B</li>
+      <li><b>Rotas e companhias:</b> <a href="https://www.adsbdb.com" target="_blank" rel="noopener">adsbdb</a></li>
+      <li><b>Fotos:</b> <a href="https://www.planespotters.net" target="_blank" rel="noopener">Planespotters.net</a>, com o crédito de cada fotógrafo</li>
+      <li><b>Radar de chuva:</b> <a href="https://www.rainviewer.com" target="_blank" rel="noopener">RainViewer</a></li>
+      <li><b>Aeroportos:</b> <a href="https://ourairports.com" target="_blank" rel="noopener">OurAirports</a> (domínio público)</li>
+      <li><b>Mapas:</b> <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a> e <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>, exibidos com <a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a></li>
+    </ul>
+    <h3>Atalhos</h3>
+    <ul class="sobre-atalhos">
+      <li><kbd>/</kbd> buscar voo ou aeroporto</li>
+      <li><kbd>Esc</kbd> fechar painel ou menu</li>
+    </ul>
+    <p class="sobre-rodape">Código aberto sob a licença MIT no <a href="https://github.com/erickfuzer/QueroQuero" target="_blank" rel="noopener">GitHub</a>. Feito por <a href="https://github.com/erickfuzer" target="_blank" rel="noopener">Erick Fuzer</a>.</p>
+  </dialog>
+
   <!-- Legenda de cores por altitude -->
   <div class="legenda" aria-label="Legenda de cores por altitude">
     <span class="legenda-titulo">Altitude</span>
     <div class="legenda-corpo">
       <div class="escala" aria-hidden="true"></div>
-      <div class="escala-rotulos" aria-hidden="true"><span>solo</span><span>10 mil</span><span>20 mil</span><span>30 mil</span><span>40 mil ft</span></div>
+      <div class="escala-rotulos rotulos-altitude" aria-hidden="true"></div>
     </div>
   </div>
-
-  <!-- Ícones reutilizados -->
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-    <symbol id="i-sol" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></symbol>
-    <symbol id="i-lua" viewBox="0 0 24 24"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/></symbol>
-    <symbol id="i-auto" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" class="cheio"/></symbol>
-  </svg>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"
           integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous"></script>

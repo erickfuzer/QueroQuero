@@ -34,6 +34,27 @@
     gravar(chave, valor) { try { localStorage.setItem(chave, valor); } catch (e) { /* sem persistência */ } },
   };
 
+  // Preferências do usuário (tema, unidades, nomes no mapa, estilo do mapa e camadas)
+  const PREFS_PADRAO = {
+    tema: 'auto', altitude: 'ft', velocidade: 'kt', nomes: 'auto', mapa: 'auto',
+    camadas: { radar: false, aeroportos: false, noite: false, rastros: false },
+  };
+  const prefs = (() => {
+    let salvo = {};
+    try { salvo = JSON.parse(guardado.ler('qq-prefs') || '{}') || {}; } catch (e) { /* preferências corrompidas: usa o padrão */ }
+    const p = { ...PREFS_PADRAO, ...salvo, camadas: { ...PREFS_PADRAO.camadas, ...(salvo.camadas || {}) } };
+    if (!salvo.tema && guardado.ler('qq-tema')) p.tema = guardado.ler('qq-tema');
+    return p;
+  })();
+  function salvarPrefs() {
+    guardado.gravar('qq-prefs', JSON.stringify(prefs));
+    guardado.gravar('qq-tema', prefs.tema);   // lido no <head> para aplicar o tema sem piscar
+  }
+
+  // Valores formatados na unidade escolhida: [principal, secundário]
+  const emAltitude = ft => prefs.altitude === 'm' ? [`${num(ft * 0.3048)} m`, `${num(ft)} ft`] : [`${num(ft)} ft`, `${num(ft * 0.3048)} m`];
+  const emVelocidade = kt => prefs.velocidade === 'kmh' ? [`${num(kt * 1.852)} km/h`, `${num(kt)} kt`] : [`${num(kt)} kt`, `${num(kt * 1.852)} km/h`];
+
   function distanciaKm(lat1, lon1, lat2, lon2) {
     const dLat = (lat2 - lat1) * RAD, dLon = (lon2 - lon1) * RAD;
     const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * RAD) * Math.cos(lat2 * RAD) * Math.sin(dLon / 2) ** 2;
@@ -217,13 +238,13 @@
   };
   const COR_SOLO = { escuro: 'rgb(125, 133, 144)', claro: 'rgb(120, 128, 140)' };
 
-  let tema = document.documentElement.getAttribute('data-tema') || 'escuro';
-  let preferenciaTema = guardado.ler('qq-tema') || 'auto';
+  let tema = document.documentElement.getAttribute('data-tema') || 'escuro';   // tema da interface
+  let paleta = tema;                                                          // cores do desenho, conforme o fundo do mapa
 
   function corAltitude(alt, solo) {
-    if (solo) return COR_SOLO[tema];
-    if (alt == null) return tema === 'escuro' ? 'rgb(200, 200, 200)' : 'rgb(110, 110, 110)';
-    const escala = ESCALAS[tema];
+    if (solo) return COR_SOLO[paleta];
+    if (alt == null) return paleta === 'escuro' ? 'rgb(200, 200, 200)' : 'rgb(110, 110, 110)';
+    const escala = ESCALAS[paleta];
     for (let i = 1; i < escala.length; i++) {
       const [a1, c1] = escala[i - 1], [a2, c2] = escala[i];
       if (alt <= a2) {
@@ -241,6 +262,8 @@
     claro: { contorno: 'rgba(0, 0, 0, 0.55)', halo: 'rgba(200, 56, 47, 0.95)', haloFundo: 'rgba(200, 56, 47, 0.1)', mouse: 'rgba(28, 31, 35, 0.07)',
              militar: 'rgba(28, 31, 35, 0.95)', texto: 'rgba(28, 31, 35, 0.85)', textoForte: '#1c1f23', textoFundo: 'rgba(255, 255, 255, 0.92)', icone: '#1c1f23' },
   };
+  TINTAS.escuro.aeroporto = '#e8e6e1'; TINTAS.escuro.aeroportoFundo = 'rgba(21, 24, 28, 0.9)';
+  TINTAS.claro.aeroporto = '#1c1f23'; TINTAS.claro.aeroportoFundo = 'rgba(255, 255, 255, 0.95)';
 
   // ───────────────────────────── Mapa ─────────────────────────────
   const inicio = (params.get('c') || '').split(',').map(Number);
@@ -248,25 +271,43 @@
 
   const mapa = L.map('mapa', {
     center: temInicio ? [inicio[0], inicio[1]] : CONFIG.centroPadrao,
-    zoom: temInicio ? limitar(inicio[2], 3, 14) : CONFIG.zoomPadrao,
+    zoom: temInicio ? limitar(inicio[2], 3, 16) : CONFIG.zoomPadrao,
     minZoom: 3,
-    maxZoom: 14,
+    maxZoom: 16,
     zoomControl: false,
     worldCopyJump: true,
   });
   mapa.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>');
 
-  // Mapas base da Esri (sem chave): cinza escuro ou claro, com a camada de nomes por cima
-  const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/';
-  const creditoEsri = 'Mapa: <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>, HERE, Garmin, ' +
-                      '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
-  const camadas = {};
-  for (const [t, nome] of [['escuro', 'Dark'], ['claro', 'Light']]) {
-    camadas[t] = L.layerGroup([
-      L.tileLayer(`${ESRI}World_${nome}_Gray_Base/MapServer/tile/{z}/{y}/{x}`, { maxZoom: 16, attribution: creditoEsri }),
-      L.tileLayer(`${ESRI}World_${nome}_Gray_Reference/MapServer/tile/{z}/{y}/{x}`, { maxZoom: 16 }),
-    ]);
+  // Estilos de mapa base, todos da Esri e sem chave. "paleta" diz se o fundo é escuro ou claro,
+  // para escolher as cores dos aviões; "escurecer" aplica o filtro que deixa o cinza mais fechado.
+  const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/';
+  const linkEsri = '<a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>';
+  const linkOsm = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
+  const ESTILOS = {
+    escuro: { nome: 'Escuro', paleta: 'escuro', escurecer: true, max: 16,
+              servicos: ['Canvas/World_Dark_Gray_Base', 'Canvas/World_Dark_Gray_Reference'], credito: `Mapa: ${linkEsri}, HERE, Garmin, ${linkOsm}` },
+    claro: { nome: 'Claro', paleta: 'claro', max: 16,
+             servicos: ['Canvas/World_Light_Gray_Base', 'Canvas/World_Light_Gray_Reference'], credito: `Mapa: ${linkEsri}, HERE, Garmin, ${linkOsm}` },
+    satelite: { nome: 'Satélite', paleta: 'escuro', max: 18,
+                servicos: ['World_Imagery', 'Reference/World_Boundaries_and_Places'], credito: `Imagens: ${linkEsri}, Maxar, Earthstar Geographics` },
+    relevo: { nome: 'Relevo', paleta: 'claro', max: 18,
+              servicos: ['World_Topo_Map'], credito: `Mapa: ${linkEsri}, HERE, Garmin, USGS, ${linkOsm}` },
+    ruas: { nome: 'Ruas', paleta: 'claro', max: 18,
+            servicos: ['World_Street_Map'], credito: `Mapa: ${linkEsri}, HERE, Garmin, USGS, ${linkOsm}` },
+  };
+  const camadasBase = {};
+  function camadaBase(id) {
+    const e = ESTILOS[id];
+    if (!camadasBase[id]) {
+      camadasBase[id] = L.layerGroup(e.servicos.map((sv, i) => L.tileLayer(`${ESRI}${sv}/MapServer/tile/{z}/{y}/{x}`,
+        { maxZoom: 19, maxNativeZoom: e.max, attribution: i === 0 ? e.credito : undefined })));
+    }
+    return camadasBase[id];
   }
+  // Panes próprios: a sombra da noite e o radar ficam entre o mapa e os aviões
+  mapa.createPane('noite');
+  mapa.createPane('radar');
 
   L.control.zoom({ position: 'bottomright', zoomInTitle: 'Aproximar', zoomOutTitle: 'Afastar' }).addTo(mapa);
 
@@ -310,24 +351,32 @@
     }, { timeout: 10000, maximumAge: 600000 });
   }
 
-  // ───────────────────────────── Tema ─────────────────────────────
-  const ICONE_TEMA = { auto: '#i-auto', claro: '#i-sol', escuro: '#i-lua' };
-
+  // ───────────────────────────── Tema e estilo do mapa ─────────────────────────────
   function aplicarTema() {
-    tema = preferenciaTema === 'auto' ? (temaSistema.matches ? 'escuro' : 'claro') : preferenciaTema;
+    tema = prefs.tema === 'auto' ? (temaSistema.matches ? 'escuro' : 'claro') : prefs.tema;
     document.documentElement.setAttribute('data-tema', tema);
-    for (const [t, camada] of Object.entries(camadas)) {
-      if (t === tema) camada.addTo(mapa); else camada.remove();
-    }
     document.querySelector('meta[name="theme-color"]').content = tema === 'escuro' ? '#15181c' : '#ffffff';
-    const escala = ESCALAS[tema].map(([alt, c]) => `rgb(${c.join(', ')}) ${(alt / ALT_SEM_LIMITE) * 100}%`).join(', ');
-    document.documentElement.style.setProperty('--escala', `linear-gradient(90deg, ${escala})`);
-    $('icone-tema').setAttribute('href', ICONE_TEMA[preferenciaTema]);
-    document.querySelectorAll('#menu-tema [data-tema]').forEach(b => b.setAttribute('aria-checked', String(b.dataset.tema === preferenciaTema)));
     montarTipos();
+    marcarPrefs();
+    aplicarMapa();
+  }
+  temaSistema.addEventListener('change', () => { if (prefs.tema === 'auto') aplicarTema(); });
+
+  let estiloAtual = null;
+  function aplicarMapa() {
+    const id = prefs.mapa === 'auto' ? tema : prefs.mapa;
+    if (id !== estiloAtual) {
+      if (estiloAtual) camadaBase(estiloAtual).remove();
+      camadaBase(id).addTo(mapa);
+      estiloAtual = id;
+    }
+    paleta = ESTILOS[id].paleta;
+    mapa.getContainer().classList.toggle('mapa-escurecido', !!ESTILOS[id].escurecer);
+    const escala = ESCALAS[paleta].map(([alt, c]) => `rgb(${c.join(', ')}) ${(alt / ALT_SEM_LIMITE) * 100}%`).join(', ');
+    document.documentElement.style.setProperty('--escala', `linear-gradient(90deg, ${escala})`);
+    document.querySelectorAll('#estilos .estilo').forEach(b => b.setAttribute('aria-checked', String(b.dataset.estilo === prefs.mapa)));
     if (selecionado) preencherPainel();
   }
-  temaSistema.addEventListener('change', () => { if (preferenciaTema === 'auto') aplicarTema(); });
 
   // ───────────────────────────── Avisos ─────────────────────────────
   let avisoTimer = null;
@@ -382,6 +431,25 @@
   let selecionado = null;
   let altMin = 0, altMax = ALT_SEM_LIMITE;
   const gruposOcultos = new Set();
+  let situacao = 'todos';          // todos, ar ou solo
+  let soEmergencia = false;
+  const companhiasSel = new Set(); // prefixos ICAO marcados (vazio = todas)
+
+  const EMERGENCIAS = { 7500: 'Interferência ilícita', 7600: 'Falha de rádio', 7700: 'Emergência' };
+
+  // Companhia pelo prefixo ICAO do indicativo (GLO1234 → GLO)
+  const prefixo = av => /^[A-Z]{3}\d/.test(av.indicativo) ? av.indicativo.slice(0, 3) : null;
+  const COMPANHIAS = {
+    GLO: 'Gol', TAM: 'LATAM Brasil', AZU: 'Azul', PTB: 'Voepass', TTL: 'Total', MWM: 'Modern Logistics', SID: 'Sideral',
+    LAN: 'LATAM Chile', LPE: 'LATAM Peru', ARG: 'Aerolíneas Argentinas', AVA: 'Avianca', CMP: 'Copa', JAT: 'JetSMART',
+    SKU: 'Sky Airline', BOV: 'Boliviana', AAL: 'American', UAL: 'United', DAL: 'Delta', ACA: 'Air Canada', AMX: 'Aeroméxico',
+    AFR: 'Air France', KLM: 'KLM', DLH: 'Lufthansa', BAW: 'British Airways', IBE: 'Iberia', TAP: 'TAP', AEA: 'Air Europa',
+    ITY: 'ITA Airways', SWR: 'Swiss', UAE: 'Emirates', QTR: 'Qatar Airways', ETH: 'Ethiopian', THY: 'Turkish Airlines',
+    SAA: 'South African', RAM: 'Royal Air Maroc', FDX: 'FedEx', UPS: 'UPS', GTI: 'Atlas Air', CLX: 'Cargolux',
+    FAB: 'Força Aérea Brasileira',
+  };
+  const nomesCompanhia = new Map();  // prefixo → nome vindo do adsbdb, para os que não estão na tabela
+  const nomeCompanhia = pre => COMPANHIAS[pre] || nomesCompanhia.get(pre) || pre;
 
   // Posição estimada pelo deslocamento desde o último dado (velocidade e rumo constantes)
   function estimar(av, agora) {
@@ -468,6 +536,10 @@
 
   function passaFiltro(av) {
     if (gruposOcultos.has(av.grupo)) return false;
+    if (situacao === 'ar' && av.solo) return false;
+    if (situacao === 'solo' && !av.solo) return false;
+    if (soEmergencia && !EMERGENCIAS[av.squawk]) return false;
+    if (companhiasSel.size && !companhiasSel.has(prefixo(av))) return false;
     const alt = av.solo ? 0 : av.alt;
     if (alt == null) return altMin === 0;
     return alt >= altMin && (altMax >= ALT_SEM_LIMITE || alt <= altMax);
@@ -541,6 +613,8 @@
       esconderAviso();
       abrirVooCompartilhado();
       if (selecionado) preencherPainel();
+      if (aeroSelecionado) preencherAeroporto();
+      if (!$('filtros').hidden) montarCompanhias();
       agendar(CONFIG.intervalo);
     } catch (e) {
       falhas++;
@@ -585,7 +659,7 @@
     const el = $('status-texto');
     if (estadoConexao === 'carregando') { el.textContent = 'Conectando…'; return; }
     if (estadoConexao === 'erro' && !ultimoSucesso) { el.textContent = 'Sem conexão com os dados'; return; }
-    const filtrando = altMin > 0 || altMax < ALT_SEM_LIMITE || gruposOcultos.size > 0;
+    const filtrando = altMin > 0 || altMax < ALT_SEM_LIMITE || gruposOcultos.size > 0 || situacao !== 'todos' || soEmergencia || companhiasSel.size > 0;
     let texto = filtrando ? `${num(visiveis)} de ${num(total)} aviões` : `${num(total)} ${total === 1 ? 'avião' : 'aviões'}`;
     const s = Math.round((agora - ultimoSucesso) / 1000);
     texto += estadoConexao === 'erro' ? ' · reconectando' : s < 2 ? ' · ao vivo' : ` · há ${s} s`;
@@ -649,10 +723,35 @@
     const tam = mapa.getSize();
     const centroLon = mapa.getCenter().lng;
     const zoom = mapa.getZoom();
-    const tinta = TINTAS[tema];
+    const tinta = TINTAS[paleta];
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, tam.x, tam.y);
     naTela = [];
+
+    desenharAeroportos(zoom, centroLon, tinta);
+
+    // Rastro de todos os aviões (camada opcional): um traço fino na cor da altitude atual
+    if (prefs.camadas.rastros) {
+      ctx.lineWidth = 1.6;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.globalAlpha = 0.5;
+      for (const av of avioes.values()) {
+        if (av.hex === selecionado || av.rastro.length < 2 || !ativo(av, agora) || !passaFiltro(av)) continue;
+        const pos = posicaoExibida(av, agora);
+        const fim = paraTela(pos.lat, ajustarLon(pos.lon, centroLon));
+        if (fim.x < -300 || fim.y < -300 || fim.x > tam.x + 300 || fim.y > tam.y + 300) continue;
+        ctx.strokeStyle = corAltitude(av.alt, av.solo);
+        ctx.beginPath();
+        av.rastro.slice(-120).forEach(([la, lo], i) => {
+          const p = paraTela(la, ajustarLon(lo, centroLon));
+          if (i) ctx.lineTo(p.x, p.y); else ctx.moveTo(p.x, p.y);
+        });
+        ctx.lineTo(fim.x, fim.y);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
 
     // Rastro do avião selecionado, colorido pela altitude de cada trecho
     const sel = selecionado && avioes.get(selecionado);
@@ -672,7 +771,7 @@
       }
     }
 
-    const rotulos = zoom >= 9;
+    const rotulos = prefs.nomes === 'sempre' ? true : prefs.nomes === 'nunca' ? false : zoom >= 9;
     ctx.font = '600 11px "IBM Plex Mono", ui-monospace, monospace';
     ctx.textBaseline = 'middle';
 
@@ -680,7 +779,7 @@
     for (const av of avioes.values()) {
       if (av === sel) continue;
       if (!ativo(av, agora) || !passaFiltro(av)) continue;
-      desenharAviao(av, posicaoExibida(av, agora), agora, centroLon, tam, tinta, av.hex === sobMouse ? 'mouse' : null, rotulos && !av.solo, pendentes);
+      desenharAviao(av, posicaoExibida(av, agora), agora, centroLon, tam, tinta, av.hex === sobMouse ? 'mouse' : null, rotulos && (!av.solo || prefs.nomes === 'sempre'), pendentes);
     }
     if (sel && ativo(sel, agora)) desenharAviao(sel, pSel, agora, centroLon, tam, tinta, 'selecionado', true, pendentes);
 
@@ -770,6 +869,71 @@
   }
   requestAnimationFrame(desenhar);
 
+  // ───────────────────────────── Aeroportos ─────────────────────────────
+  // Base enxuta do OurAirports (médios e grandes com voo regular), carregada só quando for usada
+  let aeroportos = null;
+  let carregandoAeroportos = null;
+  let aeroportosNaTela = [];
+  let aeroSelecionado = null;
+  const semAcento = s => (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+
+  function carregarAeroportos() {
+    if (!carregandoAeroportos) {
+      carregandoAeroportos = fetch('assets/dados/aeroportos.json')
+        .then(r => r.ok ? r.json() : Promise.reject(r.status))
+        .then(lista => {
+          aeroportos = lista.map(([icao, iata, nome, cidade, pais, lat, lon, porte]) =>
+            ({ icao, iata, nome, cidade, pais, lat, lon, porte, chave: semAcento(`${nome} ${cidade}`) }));
+          return aeroportos;
+        })
+        .catch(() => { carregandoAeroportos = null; return null; });
+    }
+    return carregandoAeroportos;
+  }
+
+  // Grandes aparecem a partir do zoom 5 e médios a partir do 7; o código aparece com mais zoom
+  function desenharAeroportos(zoom, centroLon, tinta) {
+    aeroportosNaTela = [];
+    if (!aeroportos || zoom < 5) return;
+    const mostrarTodos = prefs.camadas.aeroportos;
+    if (!mostrarTodos && !aeroSelecionado) return;
+    const tam = mapa.getSize();
+    ctx.font = '600 10.5px "IBM Plex Mono", ui-monospace, monospace';
+    ctx.textBaseline = 'middle';
+    for (const a of mostrarTodos ? aeroportos : [aeroSelecionado]) {
+      const escolhido = a === aeroSelecionado;
+      if (!escolhido && a.porte === 2 && zoom < 7) continue;
+      const p = paraTela(a.lat, ajustarLon(a.lon, centroLon));
+      if (p.x < -20 || p.y < -20 || p.x > tam.x + 20 || p.y > tam.y + 20) continue;
+      aeroportosNaTela.push({ a, x: p.x, y: p.y });
+      const r = escolhido ? 5.5 : a.porte === 1 ? 4 : 3;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = tinta.aeroportoFundo;
+      ctx.fill();
+      ctx.lineWidth = escolhido ? 2.5 : 1.6;
+      ctx.strokeStyle = escolhido ? tinta.halo : tinta.aeroporto;
+      ctx.stroke();
+      if (escolhido || (a.porte === 1 && zoom >= 6) || zoom >= 8) {
+        const codigo = a.iata || a.icao;
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = tinta.textoFundo;
+        ctx.strokeText(codigo, p.x + r + 4, p.y);
+        ctx.fillStyle = tinta.aeroporto;
+        ctx.fillText(codigo, p.x + r + 4, p.y);
+      }
+    }
+  }
+
+  function aeroportoPerto(ponto, raio) {
+    let melhor = null, menor = raio * raio;
+    for (const x of aeroportosNaTela) {
+      const d = (x.x - ponto.x) ** 2 + (x.y - ponto.y) ** 2;
+      if (d <= menor) { menor = d; melhor = x.a; }
+    }
+    return melhor;
+  }
+
   // O avião mais próximo de um ponto da tela
   function avioesPerto(ponto, raio) {
     let melhor = null, menor = raio * raio;
@@ -783,8 +947,10 @@
   mapa.on('click', e => {
     const dedo = e.originalEvent && e.originalEvent.pointerType === 'touch';
     const hex = avioesPerto(e.containerPoint, dedo ? 26 : 18);
+    const aero = !hex && aeroportoPerto(e.containerPoint, dedo ? 18 : 10);
     if (hex) selecionar(hex);
-    else if (selecionado) fecharPainel();
+    else if (aero) abrirAeroporto(aero);
+    else { if (selecionado) fecharPainel(); if (aeroSelecionado) fecharAeroporto(); }
   });
 
   // Dica ao passar o mouse
@@ -792,15 +958,21 @@
   mapa.on('mousemove', e => {
     if (toque.matches) return;
     const hex = avioesPerto(e.containerPoint, 18);
+    const aero = !hex && aeroportoPerto(e.containerPoint, 10);
     sobMouse = hex;
-    mapa.getContainer().style.cursor = hex ? 'pointer' : '';
+    mapa.getContainer().style.cursor = hex || aero ? 'pointer' : '';
     const av = hex && avioes.get(hex);
-    if (!av || hex === selecionado) { dica.hidden = true; return; }
-    const partes = [av.solo ? 'em solo' : av.alt != null ? `${num(av.alt)} ft` : null, av.tipo || null].filter(Boolean);
+    if ((!av || hex === selecionado) && (!aero || aero === aeroSelecionado)) { dica.hidden = true; return; }
     const b = document.createElement('b');
-    b.textContent = nomeDoVoo(av);
     const span = document.createElement('span');
-    span.textContent = partes.length ? ' · ' + partes.join(' · ') : '';
+    if (av) {
+      const partes = [av.solo ? 'em solo' : av.alt != null ? emAltitude(av.alt)[0] : null, av.tipo || null].filter(Boolean);
+      b.textContent = nomeDoVoo(av);
+      span.textContent = partes.length ? ' · ' + partes.join(' · ') : '';
+    } else {
+      b.textContent = aero.iata || aero.icao;
+      span.textContent = ` · ${aero.nome}`;
+    }
     dica.replaceChildren(b, span);
     dica.hidden = false;
     const x = e.originalEvent.clientX, y = e.originalEvent.clientY;
@@ -818,6 +990,7 @@
   function selecionar(hex, centralizar = false) {
     const av = avioes.get(hex);
     if (!av) return;
+    if (aeroSelecionado) fecharAeroporto();
     if (selecionado !== hex) alternarSeguir(false);
     selecionado = hex;
     dica.hidden = true;
@@ -837,17 +1010,23 @@
     alternarSeguir(false);
     painel.hidden = true;
     painel.classList.remove('expandida');
-    document.body.classList.remove('com-painel');
+    if (!aeroSelecionado) document.body.classList.remove('com-painel');
     medirFolha();
   }
   $('bt-fechar').addEventListener('click', fecharPainel);
 
+  // Painel aberto agora: o do voo ou o do aeroporto
+  const painelAero = $('painel-aero');
+  const painelAberto = () => !painel.hidden ? painel : !painelAero.hidden ? painelAero : null;
+
   // No celular o painel é uma folha inferior: os controles do rodapé sobem junto
   function medirFolha() {
-    const altura = !painel.hidden && celular.matches ? painel.offsetHeight : 0;
+    const aberto = painelAberto();
+    const altura = aberto && celular.matches ? aberto.offsetHeight : 0;
     document.documentElement.style.setProperty('--folga', altura + 'px');
   }
   new ResizeObserver(medirFolha).observe(painel);
+  new ResizeObserver(medirFolha).observe(painelAero);
   celular.addEventListener('change', medirFolha);
 
   // Área do mapa que não fica escondida atrás do painel
@@ -855,10 +1034,11 @@
     // O mapa começa abaixo da navbar; no computador o painel ocupa a lateral esquerda
     const tam = mapa.getSize();
     const topo = 8;
-    if (painel.hidden) return { x1: 0, y1: topo, x2: tam.x, y2: tam.y };
+    const aberto = painelAberto();
+    if (!aberto) return { x1: 0, y1: topo, x2: tam.x, y2: tam.y };
     return celular.matches
-      ? { x1: 0, y1: topo, x2: tam.x, y2: tam.y - painel.offsetHeight }
-      : { x1: painel.offsetWidth + 12, y1: topo, x2: tam.x - 60, y2: tam.y - 50 };
+      ? { x1: 0, y1: topo, x2: tam.x, y2: tam.y - aberto.offsetHeight }
+      : { x1: aberto.offsetWidth + 12, y1: topo, x2: tam.x - 60, y2: tam.y - 50 };
   }
 
   // Se o avião ficou atrás do painel, move o mapa para ele aparecer
@@ -982,19 +1162,20 @@
     const etiquetas = [];
     if (av.militar) etiquetas.push(['Militar', 'militar']);
     etiquetas.push([av.semCategoria ? 'Tipo não informado' : forma.nome, '']);
-    const EMERGENCIAS = { 7500: 'Interferência ilícita', 7600: 'Falha de rádio', 7700: 'Emergência' };
     if (EMERGENCIAS[av.squawk]) etiquetas.push([EMERGENCIAS[av.squawk], 'alerta']);
     $('p-etiquetas').replaceChildren(...etiquetas.map(([t, c]) => Object.assign(document.createElement('span'), { className: 'etiqueta ' + c, textContent: t })));
 
     // Resumo
     if (av.solo) { texto('p-altitude', 'Em solo'); texto('p-altitude-2', ''); }
     else if (av.alt == null) { texto('p-altitude', '–'); texto('p-altitude-2', ''); }
-    else { texto('p-altitude', `${num(av.alt)} ft`); texto('p-altitude-2', `${num(av.alt * 0.3048)} m`); }
-    texto('p-velocidade', `${num(av.gs)} kt`);
-    texto('p-velocidade-2', `${num(av.gs * 1.852)} km/h`);
+    else { const [a1, a2] = emAltitude(av.alt); texto('p-altitude', a1); texto('p-altitude-2', a2); }
+    const [v1, v2] = emVelocidade(av.gs);
+    texto('p-velocidade', v1);
+    texto('p-velocidade-2', v2);
     const v = av.vertical;
     if (v == null || av.solo) { texto('p-vertical', '–'); texto('p-vertical-2', ''); }
     else if (Math.abs(v) <= 64) { texto('p-vertical', 'Nivelado'); texto('p-vertical-2', ''); }
+    else if (prefs.altitude === 'm') { texto('p-vertical', `${v > 0 ? '↑' : '↓'} ${num(Math.abs(v) * 0.00508, 1)}`); texto('p-vertical-2', 'm/s'); }
     else { texto('p-vertical', `${v > 0 ? '↑' : '↓'} ${num(Math.abs(v))}`); texto('p-vertical-2', 'ft/min'); }
 
     // Voo
@@ -1070,37 +1251,55 @@
   }
 
   // Rota pelo adsbdb (via proxy). Só para indicativos de companhia (ex.: GLO1234).
+  const ehIndicativoDeCompanhia = cs => /^[A-Z]{3}\d{1,4}[A-Z]{0,2}$/.test(cs);
+
+  function buscarRota(cs) {
+    const atual = rotas.get(cs);
+    if (atual !== undefined) return Promise.resolve(atual);
+    const pedido = fetch(`${PROXY}/rota?indicativo=${encodeURIComponent(cs)}`)
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(d => {
+        rotas.set(cs, d.rota);
+        if (d.rota && d.rota.companhia) nomesCompanhia.set(cs.slice(0, 3), d.rota.companhia);
+        return d.rota;
+      })
+      .catch(() => { rotas.delete(cs); return null; });
+    rotas.set(cs, pedido);
+    return pedido;
+  }
+
+  // A base de rotas é colaborativa e às vezes está velha: só vale se a posição do avião confere
+  function rotaConfere(av, rota) {
+    if (!rota || rota instanceof Promise || !rota.origem || !rota.destino) return null;
+    const { origem: o, destino: d } = rota;
+    const pos = posicaoExibida(av, Date.now());
+    const total = distanciaKm(o.lat, o.lon, d.lat, d.lon);
+    const feito = distanciaKm(o.lat, o.lon, pos.lat, pos.lon);
+    const falta = distanciaKm(pos.lat, pos.lon, d.lat, d.lon);
+    if (feito + falta > total * 1.3 + 100) return null;
+    return { feito, falta, fracao: limitar(feito / (feito + falta), 0, 1) };
+  }
+
   function mostrarRota(av) {
     const el = $('p-rota');
     const cs = av.indicativo.toUpperCase();
     const semRota = msg => {
       el.replaceChildren(Object.assign(document.createElement('p'), { className: 'r-vazia', textContent: msg }));
     };
-    if (!/^[A-Z]{3}\d{1,4}[A-Z]{0,2}$/.test(cs)) return semRota('Rota não disponível para este voo.');
+    if (!ehIndicativoDeCompanhia(cs)) return semRota('Rota não disponível para este voo.');
 
     const rota = rotas.get(cs);
     if (rota === undefined) {
       semRota('Buscando rota…');
-      rotas.set(cs, fetch(`${PROXY}/rota?indicativo=${encodeURIComponent(cs)}`)
-        .then(r => r.ok ? r.json() : Promise.reject(r.status))
-        .then(d => { rotas.set(cs, d.rota); })
-        .catch(() => { rotas.delete(cs); })
-        .finally(() => { if (selecionado === av.hex) preencherPainel(); }));
+      buscarRota(cs).then(() => { if (selecionado === av.hex) preencherPainel(); });
       return;
     }
     if (rota instanceof Promise) return;
     if (!rota || !rota.origem || !rota.destino) return semRota('Rota não disponível para este voo.');
-
-    // A base de rotas é colaborativa e às vezes está velha: só mostra se a posição confere
+    const conta = rotaConfere(av, rota);
+    if (!conta) return semRota('Rota não disponível: a cadastrada para este indicativo não confere com a posição do avião.');
     const { origem: o, destino: d } = rota;
-    const pos = posicaoExibida(av, Date.now());
-    const total = distanciaKm(o.lat, o.lon, d.lat, d.lon);
-    const feito = distanciaKm(o.lat, o.lon, pos.lat, pos.lon);
-    const falta = distanciaKm(pos.lat, pos.lon, d.lat, d.lon);
-    if (feito + falta > total * 1.3 + 100) {
-      return semRota('Rota não disponível: a cadastrada para este indicativo não confere com a posição do avião.');
-    }
-    const fracao = limitar(feito / (feito + falta), 0, 1);
+    const { feito, falta, fracao } = conta;
 
     const ponto = (a, classe) => {
       const div = document.createElement('div');
@@ -1133,6 +1332,91 @@
     el.replaceChildren(pontos, barra, dist, nota);
   }
 
+  // ───────────────────────────── Painel do aeroporto ─────────────────────────────
+  const NOME_PAIS = Object.fromEntries(PAISES.map(p => [p[2], p[3]]));
+  const bandeira = iso => /^[A-Z]{2}$/.test(iso) ? String.fromCodePoint(...[...iso].map(c => 0x1F1E6 + c.charCodeAt(0) - 65)) : '';
+
+  function abrirAeroporto(a, centralizar = false) {
+    if (selecionado) fecharPainel();
+    aeroSelecionado = a;
+    dica.hidden = true;
+    painelAero.hidden = false;
+    document.body.classList.add('com-painel');
+    texto('a-codigo', a.iata || a.icao);
+    texto('a-nome', a.nome);
+    texto('a-cidade', [a.cidade, `${bandeira(a.pais)} ${NOME_PAIS[a.pais] || a.pais}`.trim()].filter(Boolean).join(', '));
+    texto('a-codigos', [a.iata && `IATA ${a.iata}`, `ICAO ${a.icao}`].filter(Boolean).join(' · '));
+    if (centralizar) mapa.setView([a.lat, a.lon], Math.max(mapa.getZoom(), 9), { animate: false });
+    medirFolha();
+    preencherAeroporto();
+  }
+
+  function fecharAeroporto() {
+    aeroSelecionado = null;
+    painelAero.hidden = true;
+    if (painel.hidden) document.body.classList.remove('com-painel');
+    medirFolha();
+  }
+  $('bt-fechar-aero').addEventListener('click', fecharAeroporto);
+
+  // Chegadas e partidas: voos de companhia na área cuja rota (que confere) liga ao aeroporto.
+  // Busca as rotas que faltam com no máximo 4 pedidos ao mesmo tempo.
+  let buscaDoAeroporto = 0;
+  async function preencherAeroporto() {
+    const a = aeroSelecionado;
+    if (!a) return;
+    const vez = ++buscaDoAeroporto;
+    const agora = Date.now();
+    const candidatos = [...avioes.values()].filter(av => ativo(av, agora) && ehIndicativoDeCompanhia(av.indicativo.toUpperCase()));
+    const faltam = candidatos.filter(av => !(rotas.has(av.indicativo.toUpperCase())));
+    let feitas = 0;
+    const desenharListas = () => {
+      if (aeroSelecionado !== a) return;
+      const chegando = [], saindo = [];
+      for (const av of candidatos) {
+        const rota = rotas.get(av.indicativo.toUpperCase());
+        if (!rotaConfere(av, rota)) continue;
+        const dist = distanciaKm(av.lat, av.lon, a.lat, a.lon);
+        if (rota.destino.icao === a.icao) chegando.push({ av, dist, outro: rota.origem, sentido: 'de' });
+        else if (rota.origem.icao === a.icao) saindo.push({ av, dist, outro: rota.destino, sentido: 'para' });
+      }
+      chegando.sort((x, y) => x.dist - y.dist);
+      saindo.sort((x, y) => x.dist - y.dist);
+      lista('a-chegando', chegando, 'Nenhum voo chegando na área do mapa');
+      lista('a-saindo', saindo, 'Nenhum voo saindo na área do mapa');
+      texto('a-n-chegando', chegando.length ? String(chegando.length) : '');
+      texto('a-n-saindo', saindo.length ? String(saindo.length) : '');
+      texto('a-nota', feitas < faltam.length
+        ? `Consultando rotas… ${feitas} de ${faltam.length}`
+        : 'Voos na área do mapa com rota cadastrada no adsbdb que confere com a posição.');
+    };
+    const lista = (id, itens, vazio) => {
+      const ul = $(id);
+      if (!itens.length) { ul.replaceChildren(Object.assign(document.createElement('li'), { className: 'vazio', textContent: vazio })); return; }
+      ul.replaceChildren(...itens.map(({ av, dist, outro, sentido }) => {
+        const li = document.createElement('li');
+        const meio = document.createElement('div');
+        meio.append(Object.assign(document.createElement('b'), { textContent: nomeDoVoo(av) }),
+                    Object.assign(document.createElement('small'), { textContent: `${sentido} ${outro.iata || outro.icao} · ${outro.cidade || outro.nome || ''}` }));
+        li.append(iconeForma(av.forma, corAltitude(av.alt, av.solo), 45), meio,
+                  Object.assign(document.createElement('span'), { className: 'a-dist', textContent: `${num(dist)} km` }));
+        li.addEventListener('click', () => selecionar(av.hex, true));
+        return li;
+      }));
+    };
+    desenharListas();
+    let i = 0;
+    const trabalhador = async () => {
+      while (i < faltam.length && aeroSelecionado === a && vez === buscaDoAeroporto) {
+        await buscarRota(faltam[i++].indicativo.toUpperCase());
+        feitas++;
+        desenharListas();
+      }
+    };
+    await Promise.all([1, 2, 3, 4].map(trabalhador));
+    if (vez === buscaDoAeroporto) desenharListas();
+  }
+
   // ───────────────────────────── Busca ─────────────────────────────
   const busca = $('busca');
   const sugestoes = $('sugestoes');
@@ -1146,32 +1430,64 @@
     indice = -1;
     if (!termo) { sugestoes.hidden = true; return; }
     const agora = Date.now();
-    resultados = [];
+    const voos = [];
     for (const av of avioes.values()) {
       if (!ativo(av, agora)) continue;
       const campos = [normalizar(av.indicativo), normalizar(av.matricula), av.hex.toUpperCase()];
       const pos = Math.min(...campos.map(c => { const i = c.indexOf(termo); return i < 0 ? 99 : i; }));
-      if (pos < 99) resultados.push({ av, pos });
+      if (pos < 99) voos.push({ av, pos });
     }
-    resultados.sort((a, b) => a.pos - b.pos || (a.av.indicativo || 'zz').localeCompare(b.av.indicativo || 'zz'));
-    resultados = resultados.slice(0, 6).map(r => r.av);
+    voos.sort((a, b) => a.pos - b.pos || (a.av.indicativo || 'zz').localeCompare(b.av.indicativo || 'zz'));
+
+    // Aeroportos: código exato primeiro, depois começo do código, depois nome ou cidade
+    const aeros = [];
+    if (termo.length >= 2) {
+      if (!aeroportos) carregarAeroportos().then(() => { if (busca.value && document.activeElement === busca) procurar(); });
+      else {
+        const t = semAcento(busca.value.trim());
+        for (const a of aeroportos) {
+          const nota = a.iata === termo || a.icao === termo ? 0
+            : a.iata.startsWith(termo) || a.icao.startsWith(termo) ? 1
+            : t.length >= 3 && a.chave.includes(t) ? 2 + a.porte : 99;
+          if (nota < 99) aeros.push({ a, nota });
+        }
+        aeros.sort((x, y) => x.nota - y.nota || x.a.porte - y.a.porte);
+      }
+    }
+    const exato = aeros.length && aeros[0].nota === 0;
+    const listaVoos = voos.slice(0, exato ? 4 : 6).map(r => ({ av: r.av }));
+    const listaAeros = aeros.slice(0, 4).map(r => ({ aero: r.a }));
+    resultados = exato ? [...listaAeros, ...listaVoos] : [...listaVoos, ...listaAeros];
 
     sugestoes.replaceChildren();
     if (!resultados.length) {
       const li = document.createElement('li');
       li.className = 'vazio';
-      li.textContent = 'Nenhum voo encontrado na área do mapa';
+      li.textContent = 'Nenhum voo ou aeroporto encontrado';
       sugestoes.append(li);
     }
-    resultados.forEach((av, i) => {
+    resultados.forEach((r, i) => {
       const li = document.createElement('li');
       li.setAttribute('role', 'option');
       li.id = 'sugestao-' + i;
       const b = document.createElement('b');
-      b.textContent = nomeDoVoo(av);
       const span = document.createElement('span');
-      span.textContent = [av.matricula, av.solo ? 'em solo' : av.alt != null ? `${num(av.alt)} ft` : ''].filter(Boolean).join(' · ');
-      li.append(iconeForma(av.forma, corAltitude(av.alt, av.solo), 45), b, span);
+      if (r.av) {
+        const av = r.av;
+        b.textContent = nomeDoVoo(av);
+        span.textContent = [av.matricula, av.solo ? 'em solo' : av.alt != null ? emAltitude(av.alt)[0] : ''].filter(Boolean).join(' · ');
+        li.append(iconeForma(av.forma, corAltitude(av.alt, av.solo), 45), b, span);
+      } else {
+        const a = r.aero;
+        b.textContent = a.iata || a.icao;
+        span.textContent = [a.cidade, a.pais].filter(Boolean).join(' · ');
+        const icone = document.createElementNS(SVG_NS, 'svg');
+        icone.setAttribute('viewBox', '0 0 24 24');
+        icone.setAttribute('class', 'icone-aero');
+        icone.innerHTML = '<circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2" fill="currentColor"/>';
+        li.title = a.nome;
+        li.append(icone, b, span);
+      }
       li.addEventListener('mousedown', e => { e.preventDefault(); escolher(i); });
       sugestoes.append(li);
     });
@@ -1185,8 +1501,16 @@
   }
 
   function escolher(i) {
-    const av = resultados[i];
-    if (!av) return;
+    const r = resultados[i];
+    if (!r) return;
+    if (r.aero) {
+      busca.value = r.aero.iata || r.aero.icao;
+      sugestoes.hidden = true;
+      busca.blur();
+      abrirAeroporto(r.aero, true);
+      return;
+    }
+    const av = r.av;
     // Se o avião estiver escondido pelos filtros, eles são liberados para ele aparecer
     if (!passaFiltro(av)) limparFiltros();
     busca.value = nomeDoVoo(av);
@@ -1210,13 +1534,15 @@
     const digitando = /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName);
     if (e.key === '/' && !digitando) { e.preventDefault(); busca.focus(); }
     else if (e.key === 'Escape' && !digitando) {
+      if ($('sobre').open) return;
       if (popoverAberto()) fecharPopovers();
       else if (selecionado) fecharPainel();
+      else if (aeroSelecionado) fecharAeroporto();
     }
   });
 
-  // ───────────────────────────── Popovers: filtros e tema ─────────────────────────────
-  const popovers = [[$('bt-filtros'), $('filtros')], [$('bt-tema'), $('menu-tema')]];
+  // ───────────────────────────── Popovers: mapa, filtros e preferências ─────────────────────────────
+  const popovers = [[$('bt-mapa'), $('mapas')], [$('bt-filtros'), $('filtros')], [$('bt-prefs'), $('prefs')]];
   const popoverAberto = () => popovers.some(([, p]) => !p.hidden);
 
   function fecharPopovers() {
@@ -1227,20 +1553,189 @@
       e.stopPropagation();
       const abrir = pop.hidden;
       fecharPopovers();
-      pop.hidden = !abrir;
-      botao.setAttribute('aria-expanded', String(abrir));
+      if (!abrir) return;
+      if (pop.id === 'filtros') montarCompanhias();
+      pop.hidden = false;
+      botao.setAttribute('aria-expanded', 'true');
+      // Alinha a borda direita do popover com a do botão (no celular o CSS ocupa a largura toda)
+      const nav = document.querySelector('.navbar').getBoundingClientRect();
+      pop.style.right = Math.max(8, nav.right - botao.getBoundingClientRect().right) + 'px';
     });
     pop.addEventListener('click', e => e.stopPropagation());
   }
   document.addEventListener('click', fecharPopovers);
   mapa.on('movestart', () => { if (!seguindo) fecharPopovers(); });
 
-  document.querySelectorAll('#menu-tema [data-tema]').forEach(b => b.addEventListener('click', () => {
-    preferenciaTema = b.dataset.tema;
-    guardado.gravar('qq-tema', preferenciaTema);
-    aplicarTema();
-    fecharPopovers();
-  }));
+  // ── Preferências ──
+  function marcarPrefs() {
+    document.querySelectorAll('#prefs .segmentado').forEach(grupo => {
+      grupo.querySelectorAll('button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.valor === prefs[grupo.dataset.pref])));
+    });
+    const rotulos = prefs.altitude === 'm'
+      ? ['solo', '3 mil', '6 mil', '9 mil', '12 mil m']
+      : ['solo', '10 mil', '20 mil', '30 mil', '40 mil ft'];
+    document.querySelectorAll('.rotulos-altitude').forEach(el => el.replaceChildren(...rotulos.map(t => Object.assign(document.createElement('span'), { textContent: t }))));
+  }
+  document.querySelectorAll('#prefs .segmentado').forEach(grupo => {
+    grupo.addEventListener('click', e => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      prefs[grupo.dataset.pref] = b.dataset.valor;
+      salvarPrefs();
+      if (grupo.dataset.pref === 'tema') aplicarTema();
+      else {
+        marcarPrefs();
+        definirAltitude(altMin, altMax);
+        if (selecionado) preencherPainel();
+      }
+    });
+  });
+
+  // ── Estilos de mapa, com miniatura de São Paulo ──
+  function montarEstilos() {
+    const bloco = id => `${ESRI}${ESTILOS[id].servicos[0]}/MapServer/tile/7/72/47`;
+    const opcoes = [['auto', 'Automático'], ...Object.entries(ESTILOS).map(([id, e]) => [id, e.nome])];
+    $('estilos').replaceChildren(...opcoes.map(([id, nome]) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'estilo';
+      b.dataset.estilo = id;
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', String(id === prefs.mapa));
+      const mini = document.createElement('span');
+      mini.className = 'miniatura';
+      const imagens = id === 'auto' ? ['claro', 'escuro'] : [id];
+      for (const im of imagens) {
+        mini.append(Object.assign(document.createElement('img'), {
+          src: bloco(im), alt: '', loading: 'lazy', className: ESTILOS[im].escurecer ? 'escurecida' : '',
+        }));
+      }
+      b.append(mini, Object.assign(document.createElement('span'), { textContent: id === 'auto' ? 'Segue o tema' : nome }));
+      b.addEventListener('click', () => { prefs.mapa = id; salvarPrefs(); aplicarMapa(); });
+      return b;
+    }));
+  }
+
+  // ── Camadas sobrepostas ──
+  const interruptores = { radar: $('cam-radar'), aeroportos: $('cam-aeroportos'), noite: $('cam-noite'), rastros: $('cam-rastros') };
+  for (const [nome, el] of Object.entries(interruptores)) {
+    el.checked = prefs.camadas[nome];
+    el.addEventListener('change', () => {
+      prefs.camadas[nome] = el.checked;
+      salvarPrefs();
+      aplicarCamada(nome);
+    });
+  }
+  function aplicarCamada(nome) {
+    const ligada = prefs.camadas[nome];
+    if (nome === 'radar') ligarRadar(ligada);
+    else if (nome === 'noite') ligarNoite(ligada);
+    else if (nome === 'aeroportos' && ligada) carregarAeroportos();
+  }
+
+  // Radar de chuva do RainViewer: 13 quadros das últimas 2 horas, 10 min entre eles
+  const creditoRadar = 'Radar: <a href="https://www.rainviewer.com" target="_blank" rel="noopener">RainViewer</a>';
+  const radar = { quadros: [], camadas: [], indice: -1, animacao: null, carregado: 0 };
+  const horaUtc = t => new Date(t).toISOString().slice(11, 16) + 'Z';
+
+  async function ligarRadar(ligar) {
+    pararRadar();
+    radar.camadas.forEach(c => c && c.remove());
+    radar.camadas = [];
+    radar.quadros = [];
+    mapa.attributionControl.removeAttribution(creditoRadar);
+    $('radar-controle').hidden = !ligar;
+    if (!ligar) return;
+    try {
+      const r = await fetch('https://api.rainviewer.com/public/weather-maps.json');
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
+      if (!prefs.camadas.radar) return;
+      radar.quadros = (d.radar && d.radar.past || []).map(q => ({ tempo: q.time * 1000, url: `${d.host}${q.path}/256/{z}/{x}/{y}/2/1_1.png` }));
+      radar.carregado = Date.now();
+      if (!radar.quadros.length) throw new Error('sem quadros');
+      mapa.attributionControl.addAttribution(creditoRadar);
+      mostrarQuadro(radar.quadros.length - 1);
+    } catch (e) {
+      mostrarAviso('Não foi possível carregar o radar de chuva agora.', 'erro', 4000);
+      $('radar-controle').hidden = true;
+    }
+  }
+  function camadaRadar(i) {
+    if (!radar.camadas[i]) {
+      radar.camadas[i] = L.tileLayer(radar.quadros[i].url, { pane: 'radar', opacity: 0, maxNativeZoom: 7, maxZoom: 19 }).addTo(mapa);
+    }
+    return radar.camadas[i];
+  }
+  function mostrarQuadro(i) {
+    radar.indice = i;
+    radar.quadros.forEach((q, j) => { if (radar.camadas[j] || j === i) camadaRadar(j).setOpacity(j === i ? 0.65 : 0); });
+    texto('radar-hora', horaUtc(radar.quadros[i].tempo));
+  }
+  function pararRadar() {
+    clearInterval(radar.animacao);
+    radar.animacao = null;
+    $('radar-icone').setAttribute('d', 'M8 5.5v13l10.5-6.5z');
+    $('bt-radar-play').setAttribute('aria-label', 'Animar as últimas 2 horas');
+    if (radar.quadros.length) mostrarQuadro(radar.quadros.length - 1);
+  }
+  $('bt-radar-play').addEventListener('click', () => {
+    if (radar.animacao) { pararRadar(); return; }
+    if (!radar.quadros.length) return;
+    radar.quadros.forEach((q, j) => camadaRadar(j));     // pré-carrega todos os quadros
+    let pausa = 0;
+    mostrarQuadro(0);
+    radar.animacao = setInterval(() => {
+      if (radar.indice === radar.quadros.length - 1 && pausa++ < 3) return;   // segura um pouco no quadro mais recente
+      pausa = 0;
+      mostrarQuadro((radar.indice + 1) % radar.quadros.length);
+    }, 600);
+    $('radar-icone').setAttribute('d', 'M7 5.5h3.5v13H7zM13.5 5.5H17v13h-3.5z');
+    $('bt-radar-play').setAttribute('aria-label', 'Parar a animação');
+  });
+  setInterval(() => {   // novos quadros a cada 10 min
+    if (prefs.camadas.radar && !radar.animacao && !document.hidden && Date.now() - radar.carregado > 10 * 60000) ligarRadar(true);
+  }, 60000);
+
+  // Dia e noite: polígono do lado escuro da Terra, recalculado a cada minuto
+  let camadaNoite = null;
+  function terminador(data) {
+    const n = data / 86400000 + 2440587.5 - 2451545.0;          // dias desde J2000
+    const L0 = (280.46 + 0.9856474 * n) % 360;
+    const g = ((357.528 + 0.9856003 * n) % 360) * RAD;
+    const lambda = (L0 + 1.915 * Math.sin(g) + 0.02 * Math.sin(2 * g)) * RAD;
+    const eps = (23.439 - 0.0000004 * n) * RAD;
+    const ra = Math.atan2(Math.cos(eps) * Math.sin(lambda), Math.cos(lambda));
+    const dec = Math.asin(Math.sin(eps) * Math.sin(lambda));
+    const gmst = (18.697374558 + 24.06570982441908 * n) % 24;
+    const lonSol = ra / RAD - gmst * 15;                          // longitude onde o Sol está a pino
+    const pontos = [];
+    for (let lon = -540; lon <= 540; lon += 2) {
+      pontos.push([Math.atan(-Math.cos((lon - lonSol) * RAD) / Math.tan(dec)) / RAD, lon]);
+    }
+    const polo = dec > 0 ? -90 : 90;                              // a noite fecha no polo sem Sol
+    pontos.push([polo, 540], [polo, -540]);
+    return pontos;
+  }
+  function ligarNoite(ligar) {
+    if (!ligar) { if (camadaNoite) camadaNoite.remove(); camadaNoite = null; return; }
+    const pontos = terminador(Date.now());
+    if (camadaNoite) camadaNoite.setLatLngs(pontos);
+    else camadaNoite = L.polygon(pontos, { pane: 'noite', stroke: false, fillColor: '#05070a', fillOpacity: 0.3, interactive: false }).addTo(mapa);
+  }
+  setInterval(() => { if (prefs.camadas.noite && !document.hidden) ligarNoite(true); }, 60000);
+
+  // Relógio UTC (Zulu)
+  function atualizarRelogio() { texto('relogio', horaUtc(Date.now())); }
+  setInterval(atualizarRelogio, 1000);
+
+  // Janela "Sobre"
+  const sobre = $('sobre');
+  const abrirSobre = () => { fecharPopovers(); sobre.showModal(); };
+  $('bt-sobre').addEventListener('click', abrirSobre);
+  $('link-sobre').addEventListener('click', abrirSobre);
+  $('bt-fechar-sobre').addEventListener('click', () => sobre.close());
+  sobre.addEventListener('click', e => { if (e.target === sobre) sobre.close(); });
 
   // Filtro por tipo: um botão por grupo, com o ícone do grupo
   function montarTipos() {
@@ -1268,23 +1763,83 @@
     altMax = max;
     entradaMin.value = min;
     entradaMax.value = max;
-    $('min-saida').textContent = min === 0 ? 'solo' : `${num(min)} ft`;
-    $('max-saida').textContent = max >= ALT_SEM_LIMITE ? 'sem limite' : `${num(max)} ft`;
+    $('min-saida').textContent = min === 0 ? 'solo' : emAltitude(min)[0];
+    $('max-saida').textContent = max >= ALT_SEM_LIMITE ? 'sem limite' : emAltitude(max)[0];
     filtrosMudaram();
   }
 
+  // Atalhos: "só um grupo" esconde todos os outros; Emergências mostra só squawk 7500/7600/7700
+  const soGrupo = id => gruposOcultos.size === GRUPOS.length - 1 && !gruposOcultos.has(id);
+  document.querySelectorAll('.atalho-filtro').forEach(b => b.addEventListener('click', () => {
+    const atalho = b.dataset.atalho;
+    if (atalho === 'emergencias') soEmergencia = !soEmergencia;
+    else {
+      const id = atalho === 'militares' ? 'militar' : 'helicoptero';
+      const ligar = !soGrupo(id);
+      gruposOcultos.clear();
+      if (ligar) GRUPOS.forEach(g => { if (g.id !== id) gruposOcultos.add(g.id); });
+      montarTipos();
+    }
+    filtrosMudaram();
+  }));
+
+  $('situacao').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    situacao = b.dataset.situacao;
+    filtrosMudaram();
+  });
+
+  // Companhias presentes na área, com quantos voos cada uma tem agora
+  function montarCompanhias() {
+    const agora = Date.now();
+    const contagem = new Map();
+    for (const av of avioes.values()) {
+      const pre = ativo(av, agora) && prefixo(av);
+      if (pre) contagem.set(pre, (contagem.get(pre) || 0) + 1);
+    }
+    const ordem = [...contagem.entries()].sort((a, b) => b[1] - a[1]).slice(0, 16).map(([pre]) => pre);
+    for (const pre of companhiasSel) if (!ordem.includes(pre)) ordem.push(pre);
+    $('companhias').replaceChildren(...ordem.map(pre => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'companhia';
+      b.title = `${nomeCompanhia(pre)} (${pre})`;
+      b.setAttribute('aria-pressed', String(companhiasSel.has(pre)));
+      b.append(Object.assign(document.createElement('b'), { textContent: pre }),
+               document.createTextNode(nomeCompanhia(pre) !== pre ? nomeCompanhia(pre) + ' ' : ''),
+               Object.assign(document.createElement('span'), { textContent: String(contagem.get(pre) || 0) }));
+      b.addEventListener('click', () => {
+        if (companhiasSel.has(pre)) companhiasSel.delete(pre); else companhiasSel.add(pre);
+        b.setAttribute('aria-pressed', String(companhiasSel.has(pre)));
+        filtrosMudaram();
+      });
+      return b;
+    }));
+  }
+
   function filtrosMudaram() {
-    const ativos = (altMin > 0 || altMax < ALT_SEM_LIMITE ? 1 : 0) + gruposOcultos.size;
+    const ativos = (gruposOcultos.size ? 1 : 0) + (altMin > 0 || altMax < ALT_SEM_LIMITE ? 1 : 0)
+      + (situacao !== 'todos' ? 1 : 0) + (soEmergencia ? 1 : 0) + (companhiasSel.size ? 1 : 0);
     const selo = $('filtros-ativos');
     selo.hidden = !ativos;
     selo.textContent = ativos;
+    document.querySelectorAll('.atalho-filtro').forEach(b => {
+      const a = b.dataset.atalho;
+      b.setAttribute('aria-pressed', String(a === 'emergencias' ? soEmergencia : soGrupo(a === 'militares' ? 'militar' : 'helicoptero')));
+    });
+    document.querySelectorAll('#situacao button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.situacao === situacao)));
     if (selecionado && !passaFiltro(avioes.get(selecionado))) fecharPainel();
     atualizarStatus();
   }
 
   function limparFiltros() {
     gruposOcultos.clear();
+    situacao = 'todos';
+    soEmergencia = false;
+    companhiasSel.clear();
     montarTipos();
+    montarCompanhias();
     definirAltitude(0, ALT_SEM_LIMITE);
   }
   $('limpar-filtros').addEventListener('click', limparFiltros);
@@ -1299,16 +1854,21 @@
   });
 
   // ───────────────────────────── Início ─────────────────────────────
-  for (const el of [painel, $('filtros'), $('menu-tema'), $('status'), document.querySelector('.legenda')]) {
+  for (const el of [painel, painelAero, $('mapas'), $('filtros'), $('prefs'), $('status'), $('radar-controle'), document.querySelector('.legenda')]) {
     L.DomEvent.disableClickPropagation(el);
     L.DomEvent.disableScrollPropagation(el);
   }
 
-  const textoBusca = () => { busca.placeholder = celular.matches ? 'Buscar voo' : 'Buscar voo, matrícula ou ICAO'; };
+  const textoBusca = () => { busca.placeholder = celular.matches ? 'Voo ou aeroporto' : 'Buscar voo, matrícula ou aeroporto'; };
   celular.addEventListener('change', textoBusca);
   textoBusca();
 
+  montarEstilos();
   aplicarTema();
+  filtrosMudaram();
+  definirAltitude(0, ALT_SEM_LIMITE);
+  atualizarRelogio();
+  Object.keys(prefs.camadas).forEach(aplicarCamada);
   if (!temInicio) localizar(false);
   atualizar();
 })();

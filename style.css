@@ -67,7 +67,7 @@ button { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--destaque); outline-offset: 2px; }
 
 svg { flex: none; }
-.navbar svg, .painel svg, .menu svg, .botao-mapa svg {
+.navbar svg, .painel svg, .radar-controle svg, .botao-mapa svg {
   fill: none;
   stroke: currentColor;
   stroke-width: 1.7;
@@ -190,14 +190,6 @@ svg .cheio { fill: currentColor; stroke: none; }
 .busca input::placeholder { color: var(--suave); }
 .busca input::-webkit-search-cancel-button { display: none; }
 .busca:focus-within { border-color: var(--destaque); background: var(--superficie); }
-.atalho {
-  padding: 0 6px;
-  border: 1px solid var(--borda);
-  border-radius: 4px;
-  color: var(--suave);
-  font: 500 11px/18px var(--mono);
-}
-.busca:focus-within .atalho { display: none; }
 
 .sugestoes {
   position: absolute;
@@ -224,10 +216,13 @@ svg .cheio { fill: currentColor; stroke: none; }
 .sugestoes li[aria-selected="true"], .sugestoes li:hover { background: var(--hover); }
 .sugestoes li.vazio { display: block; color: var(--suave); cursor: default; background: none; }
 .sugestoes svg { width: 20px; height: 20px; }
+.sugestoes .icone-aero { color: var(--suave); }
 .sugestoes b { font: 600 13px var(--mono); }
 .sugestoes span { color: var(--suave); font-size: 12px; font-variant-numeric: tabular-nums; }
 
 .nav-acoes { display: flex; align-items: center; gap: 4px; justify-self: end; }
+.relogio { color: var(--suave); font: 500 13px var(--mono); white-space: nowrap; }
+.divisor { width: 1px; height: 20px; margin: 0 6px; background: var(--borda); }
 
 /* Situação ao vivo */
 .status {
@@ -259,36 +254,127 @@ svg .cheio { fill: currentColor; stroke: none; }
 .popover {
   position: absolute;
   top: calc(100% + 6px);
-  right: 12px;
+  right: 12px;              /* ajustado pelo script para alinhar com o botão */
+  max-height: calc(100vh - var(--nav) - 24px);
+  overflow-y: auto;
+  padding: 14px 16px 16px;
   border: 1px solid var(--borda);
   border-radius: var(--raio);
   background: var(--superficie);
   box-shadow: var(--sombra);
 }
 
-.menu { width: 176px; padding: 4px; right: 50px; }
-.menu button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 7px 8px;
+.popover h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.popover h3 { margin: 16px 0 8px; color: var(--suave); font-size: 12px; font-weight: 500; }
+.popover h3 small { margin-left: 4px; font-size: 11px; font-weight: 400; opacity: 0.8; }
+
+.filtros { width: 360px; }
+.mapas { width: 360px; }
+.prefs { width: 300px; }
+
+/* Controle segmentado (escolha entre opções) */
+.segmentado { display: flex; padding: 2px; border: 1px solid var(--borda); border-radius: var(--raio); background: var(--superficie-2); }
+.segmentado button {
+  flex: 1;
+  padding: 5px 6px;
   border: 0;
   border-radius: 4px;
   background: none;
-  font-size: 13px;
+  color: var(--suave);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.segmentado button:hover { color: var(--texto); }
+.segmentado button[aria-checked="true"] { background: var(--superficie); color: var(--texto); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15); }
+
+/* Estilos de mapa com miniatura */
+.estilos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+.estilo {
+  display: grid;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 12px;
   text-align: left;
   cursor: pointer;
 }
-.menu button svg { width: 17px; height: 17px; color: var(--suave); }
-.menu button:hover { background: var(--hover); }
-.menu button[aria-checked="true"] { color: var(--destaque); font-weight: 600; }
-.menu button[aria-checked="true"] svg { color: var(--destaque); }
+.estilo .miniatura {
+  position: relative;
+  display: flex;
+  height: 58px;
+  overflow: hidden;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  background: var(--superficie-2);
+}
+.estilo img { flex: 1; min-width: 0; height: 100%; object-fit: cover; }
+.estilo img.escurecida { filter: brightness(0.72) contrast(1.08); }
+.estilo[aria-checked="true"] .miniatura { border-color: var(--destaque); box-shadow: 0 0 0 1px var(--destaque); }
+.estilo[aria-checked="true"] span { color: var(--destaque); font-weight: 600; }
 
-.filtros { width: 340px; padding: 14px 16px 16px; right: 88px; }
+/* Interruptores das camadas */
+.camadas { display: grid; gap: 2px; }
+.opcao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--borda);
+  cursor: pointer;
+}
+.opcao:last-child { border-bottom: 0; }
+.opcao b { display: block; font-size: 13px; font-weight: 500; }
+.opcao small { display: block; color: var(--suave); font-size: 11.5px; }
+.opcao input {
+  appearance: none;
+  flex: none;
+  position: relative;
+  width: 32px;
+  height: 18px;
+  margin: 0;
+  border-radius: 9px;
+  background: var(--borda);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.opcao input::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s;
+}
+.opcao input:checked { background: var(--destaque); }
+.opcao input:checked::after { transform: translateX(14px); }
+
+/* Atalhos e companhias nos filtros */
+.atalhos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.atalho-filtro, .companhia {
+  padding: 4px 10px;
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  background: none;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.atalho-filtro:hover, .companhia:hover { background: var(--hover); }
+.atalho-filtro[aria-pressed="true"], .companhia[aria-pressed="true"] { border-color: var(--destaque); background: var(--destaque-fundo); color: var(--destaque); }
+.companhias { display: flex; flex-wrap: wrap; gap: 6px; }
+.companhia b { font: 600 11.5px var(--mono); margin-right: 4px; }
+.companhia span { color: var(--suave); font-variant-numeric: tabular-nums; }
+.companhias:empty::before { content: "Nenhum voo de companhia na área"; color: var(--suave); font-size: 12.5px; }
+.link-sobre { margin-top: 16px; padding: 0; }
+
 .pop-cab { display: flex; justify-content: space-between; align-items: center; }
-.filtros h2 { margin: 0; font-size: 15px; font-weight: 600; }
-.filtros h3 { margin: 16px 0 8px; color: var(--suave); font-size: 12px; font-weight: 500; }
 
 .tipos { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .tipo {
@@ -306,6 +392,7 @@ svg .cheio { fill: currentColor; stroke: none; }
 .tipo:hover { background: var(--hover); }
 .tipo svg { width: 20px; height: 20px; }
 .tipo[aria-pressed="false"] { opacity: 0.45; }
+.tipo small { margin-left: auto; color: var(--suave); font-size: 11.5px; font-variant-numeric: tabular-nums; }
 .tipo[aria-pressed="false"] span { text-decoration: line-through; }
 
 .escala { height: 5px; border-radius: 3px; background: var(--escala); }
@@ -477,6 +564,77 @@ svg .cheio { fill: currentColor; stroke: none; }
 .p-lista dd.codigo { font-family: var(--mono); font-size: 12.5px; }
 .p-lista dd.alerta { color: var(--perigo); }
 
+/* ───────────────────────────── Painel do aeroporto ───────────────────────────── */
+.aero-icone svg { width: 24px; height: 24px; color: var(--texto); }
+.a-info { margin-top: 12px; }
+.a-titulo { display: flex; justify-content: space-between; margin: 18px 0 4px; font-size: 13px; font-weight: 600; }
+.a-titulo span { color: var(--suave); font-weight: 400; font-variant-numeric: tabular-nums; }
+.a-voos { margin: 0; padding: 0; list-style: none; }
+.a-voos li {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 6px;
+  margin: 0 -6px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.a-voos li:hover { background: var(--hover); }
+.a-voos li.vazio { display: block; color: var(--suave); cursor: default; background: none; }
+.a-voos svg { width: 20px; height: 20px; }
+.a-voos b { font: 600 13px var(--mono); }
+.a-voos small { display: block; color: var(--suave); font-size: 12px; }
+.a-voos .a-dist { color: var(--suave); font-size: 12px; font-variant-numeric: tabular-nums; text-align: right; }
+.a-nota { margin: 14px 0 0; color: var(--suave); font-size: 11.5px; }
+
+/* ───────────────────────────── Radar de chuva ───────────────────────────── */
+.radar-controle {
+  position: fixed;
+  right: 60px;
+  bottom: calc(12px + var(--base));
+  z-index: 800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px 0 2px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  background: var(--superficie);
+  box-shadow: var(--sombra);
+  font-size: 12.5px;
+}
+.radar-controle .botao { width: 30px; height: 30px; }
+.radar-controle .botao svg { width: 15px; height: 15px; }
+.radar-hora { color: var(--suave); font: 500 12px var(--mono); }
+
+/* ───────────────────────────── Sobre ───────────────────────────── */
+.sobre-janela {
+  width: min(520px, calc(100% - 24px));
+  max-height: calc(100% - 48px);
+  padding: 20px 22px;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  background: var(--superficie);
+  color: var(--texto);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  font-size: 13.5px;
+}
+.sobre-janela::backdrop { background: rgba(10, 12, 15, 0.45); }
+.sobre-janela header { display: flex; justify-content: space-between; align-items: center; }
+.sobre-janela h2 { margin: 0; font-size: 18px; }
+.sobre-janela h3 { margin: 18px 0 6px; color: var(--suave); font-size: 12px; font-weight: 500; }
+.sobre-janela p { margin: 10px 0 0; line-height: 1.55; }
+.sobre-janela ul { margin: 0; padding-left: 18px; line-height: 1.7; }
+.sobre-janela a { color: var(--destaque); text-decoration: none; }
+.sobre-janela a:hover { text-decoration: underline; }
+.sobre-janela svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
+.sobre-atalhos { padding: 0 !important; list-style: none; }
+.sobre-janela kbd { display: inline-block; min-width: 26px; margin-right: 6px; padding: 0 5px; border: 1px solid var(--borda); border-radius: 4px; font: 500 11.5px/20px var(--mono); text-align: center; }
+.sobre-rodape { color: var(--suave); font-size: 12.5px; }
+
 /* ───────────────────────────── Legenda ───────────────────────────── */
 .legenda {
   position: fixed;
@@ -500,7 +658,9 @@ body.com-painel .legenda { left: calc(var(--painel) + 12px); }
 
 /* ───────────────────────────── Leaflet ───────────────────────────── */
 .leaflet-container { background: var(--fundo-mapa); font: inherit; }
-[data-tema="escuro"] .leaflet-tile-pane { filter: brightness(0.72) contrast(1.08); } /* escurece o cinza da Esri */
+.mapa-escurecido .leaflet-tile-pane { filter: brightness(0.72) contrast(1.08); } /* escurece o cinza da Esri */
+.leaflet-radar-pane { z-index: 350; pointer-events: none; }
+.leaflet-noite-pane { z-index: 300; pointer-events: none; }
 .leaflet-bottom { bottom: calc(var(--folga) + var(--base)); }
 .leaflet-bottom.leaflet-right .leaflet-control:not(.leaflet-control-attribution) { margin-right: 12px; }
 .leaflet-bar {
@@ -540,8 +700,8 @@ body.com-painel .legenda { left: calc(var(--painel) + 12px); }
 }
 
 /* ───────────────────────────── Telas médias ───────────────────────────── */
-@media (max-width: 1100px) {
-  .status { display: none; }
+@media (max-width: 1180px) {
+  .status, .relogio, .divisor { display: none; }
 }
 @media (max-width: 900px) {
   .legenda { display: none; }
@@ -551,7 +711,7 @@ body.com-painel .legenda { left: calc(var(--painel) + 12px); }
 /* ───────────────────────────── Celular ───────────────────────────── */
 @media (max-width: 640px) {
   .navbar { gap: 8px; padding: var(--topo) 6px 0 10px; }
-  .marca-nome, .codigo-fonte, .atalho { display: none; }
+  .marca-nome, .codigo-fonte, .sobre, .relogio, .divisor { display: none; }
   .busca input { font-size: 16px; } /* 16px evita o zoom automático do iOS */
   .nav-acoes { gap: 0; }
   .nav-acoes .botao { width: 36px; padding: 0; }
@@ -578,9 +738,9 @@ body.com-painel .legenda { left: calc(var(--painel) + 12px); }
   }
   body.com-painel .status { display: none; }
 
-  .popover.filtros, .popover.menu { position: fixed; top: calc(var(--nav) + var(--topo) + 6px); }
-  .popover.filtros { left: 8px; right: 8px; width: auto; max-height: calc(100% - 80px); overflow-y: auto; }
-  .popover.menu { right: 8px; }
+  .popover { position: fixed; top: calc(var(--nav) + var(--topo) + 6px); left: 8px; right: 8px !important; width: auto; max-height: calc(100% - 80px); }
+  .radar-controle { right: auto; left: 8px; bottom: calc(64px + var(--base)); }
+  body.com-painel .radar-controle { display: none; }
 
   .leaflet-control-zoom { display: none; }        /* no celular o zoom é por pinça */
   .leaflet-control-attribution { font-size: 10px; max-width: 100%; }
