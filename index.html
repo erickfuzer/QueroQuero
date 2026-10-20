@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Quero-Quero · Radar de voos</title>
   <meta name="description" content="Rastreador de voos em tempo real feito em HTML, CSS e JavaScript puros: aviões no mapa com rumo, altitude, velocidade, rastro e rota.">
-  <meta name="theme-color" content="#0b0f14">
+  <meta name="theme-color" content="#0d1117">
 
   <!-- Ícone da aba: emoji em SVG, sem precisar de arquivo de imagem -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text x='50' y='50' font-size='80' text-anchor='middle' dominant-baseline='central'>✈️</text></svg>">
@@ -19,13 +19,23 @@
   <meta property="og:image" content="https://erickfuzer.github.io/QueroQuero/assets/social-preview.png">
   <meta property="og:image:width" content="1280">
   <meta property="og:image:height" content="640">
-  <meta property="og:image:alt" content="Mapa escuro do sul do Brasil com aviões coloridos pela altitude e o painel de um voo aberto">
+  <meta property="og:image:alt" content="Mapa de São Paulo com aviões coloridos pela altitude e o painel de um voo aberto">
   <meta name="twitter:card" content="summary_large_image">
 
-  <!-- Fonte: Inter para a interface, JetBrains Mono para números e indicativos -->
+  <!-- Aplica o tema salvo antes de desenhar a página, para não piscar -->
+  <script>
+    (function () {
+      var p = 'auto';
+      try { p = localStorage.getItem('qq-tema') || 'auto'; } catch (e) {}
+      var escuro = p === 'escuro' || (p === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.setAttribute('data-tema', escuro ? 'escuro' : 'claro');
+    })();
+  </script>
+
+  <!-- Fontes: Inter para a interface, JetBrains Mono para indicativos e códigos -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
         integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous">
@@ -34,66 +44,142 @@
 <body>
   <div id="mapa" aria-label="Mapa com os aviões"></div>
 
-  <!-- Barra superior: marca, busca e contagem -->
+  <!-- Barra superior: marca, busca, filtros e tema -->
   <header class="barra">
-    <div class="marca">
-      <span class="marca-icone" aria-hidden="true">✈️</span>
-      <div>
-        <h1>Quero-Quero</h1>
-        <p id="contagem">Carregando…</p>
-      </div>
-    </div>
-    <div class="busca">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 3a7.5 7.5 0 0 1 5.9 12.1l4.8 4.8-1.4 1.4-4.8-4.8A7.5 7.5 0 1 1 10.5 3Zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Z"/></svg>
-      <input id="busca" type="search" placeholder="Buscar indicativo" autocomplete="off" spellcheck="false"
-             aria-label="Buscar voo por indicativo ou matrícula" aria-controls="sugestoes" aria-autocomplete="list">
+    <a class="marca" href="./" aria-label="Quero-Quero, recarregar o radar">
+      <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+        <rect width="32" height="32" rx="9" class="logo-fundo"/>
+        <circle cx="16" cy="16" r="9" class="logo-traco"/>
+        <circle cx="16" cy="16" r="4.5" class="logo-traco fraco"/>
+        <path d="M16 16 L22.4 9.6 A9 9 0 0 1 25 16 Z" class="logo-varredura"/>
+        <circle cx="16" cy="16" r="1.6" class="logo-ponto"/>
+        <circle cx="20.5" cy="12.4" r="1.4" class="logo-ponto"/>
+      </svg>
+      <span class="marca-nome">Quero-Quero</span>
+    </a>
+
+    <div class="busca" role="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+      <input id="busca" type="search" placeholder="Buscar voo, matrícula ou ICAO" autocomplete="off" spellcheck="false"
+             aria-label="Buscar voo por indicativo, matrícula ou código ICAO" aria-controls="sugestoes" aria-autocomplete="list">
+      <kbd class="atalho" aria-hidden="true">/</kbd>
       <ul id="sugestoes" class="sugestoes" role="listbox" hidden></ul>
     </div>
+
+    <div class="barra-acoes">
+      <button id="bt-filtros" class="botao" type="button" aria-expanded="false" aria-controls="filtros">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        <span class="rotulo">Filtros</span>
+        <span id="filtros-ativos" class="selo" hidden></span>
+      </button>
+      <button id="bt-tema" class="botao icone" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-tema" title="Tema do mapa" aria-label="Tema do mapa">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use id="icone-tema" href="#i-auto"/></svg>
+      </button>
+    </div>
+
+    <div id="menu-tema" class="popover menu" role="menu" aria-label="Tema do mapa" hidden>
+      <button type="button" role="menuitemradio" data-tema="auto"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-auto"/></svg>Automático</button>
+      <button type="button" role="menuitemradio" data-tema="claro"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-sol"/></svg>Claro</button>
+      <button type="button" role="menuitemradio" data-tema="escuro"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-lua"/></svg>Escuro</button>
+    </div>
+
+    <section id="filtros" class="popover filtros" aria-label="Filtros" hidden>
+      <div class="pop-cab">
+        <h2>Filtros</h2>
+        <button id="limpar-filtros" class="link" type="button">Limpar</button>
+      </div>
+      <h3>Tipo de aeronave</h3>
+      <div id="tipos" class="tipos"></div>
+      <h3>Altitude</h3>
+      <div class="escala" aria-hidden="true"></div>
+      <div class="escala-rotulos" aria-hidden="true"><span>solo</span><span>10 mil</span><span>20 mil</span><span>30 mil</span><span>40 mil+</span></div>
+      <div class="faixa">
+        <label>Mínima <output id="min-saida">solo</output>
+          <input id="alt-min" type="range" min="0" max="45000" step="1000" value="0">
+        </label>
+        <label>Máxima <output id="max-saida">sem limite</output>
+          <input id="alt-max" type="range" min="0" max="45000" step="1000" value="45000">
+        </label>
+      </div>
+    </section>
   </header>
 
-  <!-- Avisos (limite da API, falha de rede etc.) -->
+  <!-- Avisos (limite da API, falha de rede, link copiado) -->
   <div id="aviso" class="aviso" role="status" aria-live="polite" hidden></div>
 
-  <!-- Painel do voo selecionado (folha inferior no celular) -->
+  <!-- Dica ao passar o mouse sobre um avião -->
+  <div id="dica" class="dica" hidden></div>
+
+  <!-- Painel do voo selecionado (folha inferior arrastável no celular) -->
   <aside id="painel" class="painel" aria-label="Detalhes do voo" hidden>
-    <button class="painel-fechar" id="fechar" aria-label="Fechar painel">×</button>
-    <div class="painel-alca" aria-hidden="true"></div>
-    <div class="painel-topo">
-      <h2 id="p-indicativo">–</h2>
-      <p id="p-companhia" class="sub"></p>
-      <p id="p-aeronave" class="sub"></p>
+    <div class="alca" aria-hidden="true"></div>
+    <header class="p-cab">
+      <div class="p-icone" aria-hidden="true">
+        <svg viewBox="-16 -16 32 32"><path id="p-forma"/></svg>
+      </div>
+      <div class="p-titulo">
+        <h2 id="p-indicativo">–</h2>
+        <p id="p-subtitulo"></p>
+      </div>
+      <div class="p-botoes">
+        <button id="bt-seguir" class="botao icone" type="button" aria-pressed="false" title="Seguir o avião" aria-label="Seguir o avião">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2" class="cheio"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/></svg>
+        </button>
+        <button id="bt-compartilhar" class="botao icone" type="button" title="Compartilhar este voo" aria-label="Compartilhar este voo">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3.5M7.5 8 12 3.5 16.5 8M5 13v6.5h14V13"/></svg>
+        </button>
+        <button id="bt-fechar" class="botao icone" type="button" title="Fechar" aria-label="Fechar painel">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div id="p-etiquetas" class="p-etiquetas"></div>
+    <section id="p-rota" class="p-rota" aria-label="Rota"></section>
+
+    <section class="p-resumo" aria-label="Resumo do voo">
+      <div><span>Altitude</span><strong id="p-altitude">–</strong><small id="p-altitude-2"></small></div>
+      <div><span>Velocidade</span><strong id="p-velocidade">–</strong><small id="p-velocidade-2"></small></div>
+      <div><span>Vel. vertical</span><strong id="p-vertical">–</strong><small id="p-vertical-2"></small></div>
+    </section>
+
+    <div class="p-mais">
+      <h3>Voo</h3>
+      <dl class="p-lista">
+        <div><dt>Rumo</dt><dd id="p-rumo">–</dd></div>
+        <div><dt>Squawk</dt><dd id="p-squawk">–</dd></div>
+        <div><dt>Posição</dt><dd id="p-posicao">–</dd></div>
+        <div><dt>Última posição</dt><dd id="p-visto">–</dd></div>
+      </dl>
+      <h3>Aeronave</h3>
+      <dl class="p-lista">
+        <div><dt>Matrícula</dt><dd id="p-matricula">–</dd></div>
+        <div><dt>Modelo</dt><dd id="p-modelo">–</dd></div>
+        <div><dt>Código ICAO</dt><dd id="p-hex">–</dd></div>
+        <div><dt>País de registro</dt><dd id="p-pais">–</dd></div>
+      </dl>
     </div>
-    <div id="p-rota" class="rota"></div>
-    <dl class="dados">
-      <div><dt>Altitude</dt><dd id="p-altitude">–</dd></div>
-      <div><dt>Velocidade</dt><dd id="p-velocidade">–</dd></div>
-      <div><dt>Rumo</dt><dd id="p-rumo">–</dd></div>
-      <div><dt>Vel. vertical</dt><dd id="p-vertical">–</dd></div>
-      <div><dt>País de registro</dt><dd id="p-pais">–</dd></div>
-      <div><dt>Squawk</dt><dd id="p-squawk">–</dd></div>
-    </dl>
-    <p class="rodape-painel"><span id="p-hex"></span><span id="p-visto"></span></p>
   </aside>
 
-  <!-- Legenda de cores e filtro por altitude -->
-  <section id="legenda" class="legenda" aria-label="Legenda e filtro por altitude">
-    <button id="legenda-alternar" class="legenda-titulo" aria-expanded="true" aria-controls="filtro">
-      <span>Altitude (pés)</span>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5z"/></svg>
-    </button>
-    <div class="escala" aria-hidden="true"></div>
-    <div class="escala-rotulos" aria-hidden="true">
-      <span>solo</span><span>10 mil</span><span>20 mil</span><span>30 mil</span><span>40 mil+</span>
+  <!-- Rodapé: situação da conexão e legenda de altitude -->
+  <div id="status" class="status">
+    <span class="ponto" aria-hidden="true"></span>
+    <span id="status-texto">Conectando…</span>
+  </div>
+  <div class="legenda" aria-label="Legenda de cores por altitude">
+    <span class="legenda-titulo">Altitude</span>
+    <div class="legenda-corpo">
+      <div class="escala" aria-hidden="true"></div>
+      <div class="escala-rotulos" aria-hidden="true"><span>solo</span><span>10 mil</span><span>20 mil</span><span>30 mil</span><span>40 mil pés</span></div>
     </div>
-    <div id="filtro" class="filtro">
-      <label>Mínima <output id="min-saida">solo</output>
-        <input id="alt-min" type="range" min="0" max="45000" step="1000" value="0">
-      </label>
-      <label>Máxima <output id="max-saida">sem limite</output>
-        <input id="alt-max" type="range" min="0" max="45000" step="1000" value="45000">
-      </label>
-    </div>
-  </section>
+  </div>
+
+  <!-- Ícones reutilizados -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-sol" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></symbol>
+    <symbol id="i-lua" viewBox="0 0 24 24"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/></symbol>
+    <symbol id="i-auto" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" class="cheio"/></symbol>
+  </svg>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"
           integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous"></script>
