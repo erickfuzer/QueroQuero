@@ -2,15 +2,13 @@
 import { limitar } from './util.js';
 
 // Escala de cores por altitude (pés), uma para cada fundo
-// Escalas curtas e pouco saturadas, para o mapa não virar confete: do baixo (quente) ao alto (frio)
+// Escalas de poucas cores, sem arco-íris: do baixo (quente) ao alto (frio), passando por um tom do meio
 export const ESCALAS = {
   escuro: [
-    [0, [226, 132, 96]], [10000, [214, 190, 112]], [20000, [128, 202, 150]],
-    [30000, [104, 178, 214]], [40000, [160, 150, 222]], [45000, [160, 150, 222]],
+    [0, [224, 172, 104]], [15000, [104, 192, 168]], [30000, [130, 182, 236]], [45000, [130, 182, 236]],
   ],
   claro: [
-    [0, [178, 78, 44]], [10000, [150, 112, 24]], [20000, [42, 122, 84]],
-    [30000, [30, 98, 152]], [40000, [92, 64, 152]], [45000, [92, 64, 152]],
+    [0, [168, 88, 40]], [15000, [36, 120, 108]], [30000, [38, 72, 150]], [45000, [38, 72, 150]],
   ],
 };
 const COR_SOLO = { escuro: 'rgb(122, 140, 146)', claro: 'rgb(120, 122, 130)' };
