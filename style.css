@@ -1,47 +1,52 @@
 /* ───────────────────────────── Temas ─────────────────────────────
-   Paleta neutra (grafite e areia) com um único destaque: o vermelho do olho do quero-quero. */
+   A interface como instrumento de navegação: no escuro, a tela de um radar de controle
+   (azul-petróleo, com âmbar no que está selecionado); no claro, uma carta aeronáutica
+   (papel creme, tinta azul-marinho e magenta). */
 :root,
 [data-tema="escuro"] {
-  --fundo-mapa: #1b1c1e;
-  --superficie: #15181c;
-  --superficie-2: #1c2025;
-  --hover: #23282e;
-  --borda: #2a2f36;
-  --texto: #e8e6e1;
-  --suave: #8f959d;
-  --destaque: #e0574d;
-  --destaque-fundo: rgba(224, 87, 77, 0.14);
-  --militar: #e3b14f;
-  --perigo: #ff6b6b;
-  --vivo: #3fb37a;
-  --sombra: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --fundo-mapa: #0f1719;
+  --superficie: #0e1416;
+  --superficie-2: #131c1f;
+  --hover: #19252a;
+  --borda: #22323a;
+  --borda-forte: #34474f;
+  --texto: #dbe5e3;
+  --suave: #7b8f95;
+  --destaque: #e6a53c;
+  --destaque-fundo: rgba(230, 165, 60, 0.13);
+  --militar: #e6a53c;
+  --perigo: #ef6a5b;
+  --vivo: #4cc79b;
+  --sombra: 0 2px 10px rgba(0, 0, 0, 0.35);
   color-scheme: dark;
 }
 
 [data-tema="claro"] {
-  --fundo-mapa: #e7e8ea;
-  --superficie: #ffffff;
-  --superficie-2: #f6f5f2;
-  --hover: #efede8;
-  --borda: #e3e1db;
-  --texto: #1c1f23;
-  --suave: #6b6f76;
-  --destaque: #c8382f;
-  --destaque-fundo: rgba(200, 56, 47, 0.08);
-  --militar: #a86e12;
-  --perigo: #c8382f;
-  --vivo: #23955f;
-  --sombra: 0 4px 14px rgba(28, 31, 35, 0.12);
+  --fundo-mapa: #ece6d6;
+  --superficie: #f7f3e8;
+  --superficie-2: #f0eadb;
+  --hover: #e9e2cf;
+  --borda: #d8cfb8;
+  --borda-forte: #bfb398;
+  --texto: #1d2b48;
+  --suave: #5f6a7e;
+  --destaque: #a8336f;
+  --destaque-fundo: rgba(168, 51, 111, 0.09);
+  --militar: #8a5a12;
+  --perigo: #b8352b;
+  --vivo: #2a7f5f;
+  --sombra: 0 2px 8px rgba(29, 43, 72, 0.12);
   color-scheme: light;
 }
 
 :root {
   --nav: 52px;
-  --raio: 6px;
+  --raio: 3px;
   --painel: 380px;
   --folga: 0px;          /* altura da folha inferior no celular (definida pelo script) */
   --topo: env(safe-area-inset-top, 0px);
   --base: env(safe-area-inset-bottom, 0px);
+  --cond: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
   --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --escala: linear-gradient(90deg, #ff6b4a, #ffd84a, #7ee06c, #3fd0e0, #8a7dff);
@@ -97,8 +102,7 @@ svg .cheio { fill: currentColor; stroke: none; }
   border: 1px solid transparent;
   border-radius: var(--raio);
   background: none;
-  font-size: 13px;
-  font-weight: 500;
+  font: 500 13.5px var(--cond);
   text-decoration: none;
   cursor: pointer;
   transition: background 0.12s, color 0.12s;
@@ -112,7 +116,7 @@ svg .cheio { fill: currentColor; stroke: none; }
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
-  border-radius: 9px;
+  border-radius: 2px;
   background: var(--destaque);
   color: #fff;
   font-size: 11px;
@@ -160,10 +164,10 @@ svg .cheio { fill: currentColor; stroke: none; }
 .logo { width: 32px; height: 32px; }
 .navbar .logo { stroke: none; }
 .logo-silhueta { fill: var(--texto); }
-.logo-olho { fill: var(--destaque); }
-.logo-iris { fill: color-mix(in srgb, var(--destaque) 78%, #000); }
+.logo-olho { fill: #d64a3e; }                  /* o olho do quero-quero é sempre vermelho */
+.logo-iris { fill: #a8352c; }
 .logo-pupila { fill: #17191d; }
-.marca-nome { font-size: 16px; font-weight: 600; letter-spacing: -0.1px; white-space: nowrap; }
+.marca-nome { font: 600 17px/1 var(--cond); letter-spacing: 0.1px; white-space: nowrap; }
 
 .busca {
   position: relative;
@@ -221,7 +225,7 @@ svg .cheio { fill: currentColor; stroke: none; }
 .sugestoes span { color: var(--suave); font-size: 12px; font-variant-numeric: tabular-nums; }
 
 .nav-acoes { display: flex; align-items: center; gap: 4px; justify-self: end; }
-.relogio { color: var(--suave); font: 500 13px var(--mono); white-space: nowrap; }
+.relogio { color: var(--texto); font: 500 12.5px var(--mono); white-space: nowrap; }
 .divisor { width: 1px; height: 20px; margin: 0 6px; background: var(--borda); }
 
 /* Situação ao vivo */
@@ -231,7 +235,8 @@ svg .cheio { fill: currentColor; stroke: none; }
   gap: 7px;
   margin-right: 8px;
   color: var(--suave);
-  font-size: 13px;
+  font: 500 13.5px var(--cond);
+  font-variant-numeric: tabular-nums;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -264,8 +269,8 @@ svg .cheio { fill: currentColor; stroke: none; }
   box-shadow: var(--sombra);
 }
 
-.popover h2 { margin: 0; font-size: 15px; font-weight: 600; }
-.popover h3 { margin: 16px 0 8px; color: var(--suave); font-size: 12px; font-weight: 500; }
+.popover h2 { margin: 0; font: 600 16px var(--cond); }
+.popover h3 { margin: 16px 0 8px; color: var(--suave); font: 500 12.5px var(--cond); }
 .popover h3 small { margin-left: 4px; font-size: 11px; font-weight: 400; opacity: 0.8; }
 
 .filtros { width: 360px; }
@@ -311,7 +316,8 @@ svg .cheio { fill: currentColor; stroke: none; }
   background: var(--superficie-2);
 }
 .estilo img { flex: 1; min-width: 0; height: 100%; object-fit: cover; }
-.estilo img.escurecida { filter: brightness(0.72) contrast(1.08); }
+.estilo img.escurecida { filter: brightness(0.62) contrast(1.1) sepia(0.35) hue-rotate(140deg) saturate(1.4); }
+.estilo img.papel { filter: sepia(0.28) saturate(0.9) brightness(0.99); }
 .estilo[aria-checked="true"] .miniatura { border-color: var(--destaque); box-shadow: 0 0 0 1px var(--destaque); }
 .estilo[aria-checked="true"] span { color: var(--destaque); font-weight: 600; }
 
@@ -333,10 +339,10 @@ svg .cheio { fill: currentColor; stroke: none; }
   appearance: none;
   flex: none;
   position: relative;
-  width: 32px;
-  height: 18px;
+  width: 30px;
+  height: 16px;
   margin: 0;
-  border-radius: 9px;
+  border-radius: 2px;
   background: var(--borda);
   cursor: pointer;
   transition: background 0.15s;
@@ -346,9 +352,9 @@ svg .cheio { fill: currentColor; stroke: none; }
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 1px;
   background: #fff;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   transition: transform 0.15s;
@@ -361,7 +367,7 @@ svg .cheio { fill: currentColor; stroke: none; }
 .atalho-filtro, .companhia {
   padding: 4px 10px;
   border: 1px solid var(--borda);
-  border-radius: 999px;
+  border-radius: var(--raio);
   background: none;
   font-size: 12.5px;
   cursor: pointer;
@@ -395,7 +401,7 @@ svg .cheio { fill: currentColor; stroke: none; }
 .tipo small { margin-left: auto; color: var(--suave); font-size: 11.5px; font-variant-numeric: tabular-nums; }
 .tipo[aria-pressed="false"] span { text-decoration: line-through; }
 
-.escala { height: 5px; border-radius: 3px; background: var(--escala); }
+.escala { height: 4px; border-radius: 1px; background: var(--escala); }
 .escala-rotulos {
   display: flex;
   justify-content: space-between;
@@ -490,7 +496,7 @@ body.com-alcance .aviso { top: calc(var(--nav) + var(--topo) + 60px); }
 .p-titulo { flex: 1; min-width: 0; }
 .p-titulo h2 {
   margin: 0;
-  font: 600 22px/1.2 var(--mono);
+  font: 600 24px/1.15 var(--mono);
   letter-spacing: 0.2px;
   white-space: nowrap;
   overflow: hidden;
@@ -508,11 +514,10 @@ body.com-alcance .aviso { top: calc(var(--nav) + var(--topo) + 60px); }
 .p-etiquetas:empty { display: none; }
 .etiqueta {
   padding: 1px 7px;
-  border: 1px solid var(--borda);
-  border-radius: 4px;
+  border: 1px solid var(--borda-forte);
+  border-radius: 2px;
   color: var(--suave);
-  font-size: 12px;
-  font-weight: 500;
+  font: 500 12.5px var(--cond);
 }
 .etiqueta.militar { border-color: color-mix(in srgb, var(--militar) 50%, transparent); color: var(--militar); }
 .etiqueta.alerta { border-color: var(--perigo); color: var(--perigo); }
@@ -537,7 +542,7 @@ body.com-alcance .aviso { top: calc(var(--nav) + var(--topo) + 60px); }
 /* Rota: linha entre dois aeroportos, sem caixa */
 .p-rota { margin-top: 16px; padding: 14px 0; border-top: 1px solid var(--borda); border-bottom: 1px solid var(--borda); }
 .r-pontos { display: flex; justify-content: space-between; gap: 12px; }
-.r-ap b { display: block; font: 600 24px/1.1 var(--mono); }
+.r-ap b { display: block; font: 500 24px/1.1 var(--mono); }
 .r-ap span { display: block; margin-top: 2px; color: var(--suave); font-size: 12px; }
 .r-ap.chegada { text-align: right; }
 .r-barra { position: relative; height: 2px; margin: 14px 9px 10px; background: var(--borda); }
@@ -557,22 +562,28 @@ body.com-alcance .aviso { top: calc(var(--nav) + var(--topo) + 60px); }
 .r-vazia { margin: 0; color: var(--suave); font-size: 13px; }
 
 /* Resumo: três números grandes separados por divisórias */
-.p-resumo { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 14px; }
-.p-resumo div { padding: 0 12px; border-left: 1px solid var(--borda); }
-.p-resumo div:first-child { padding-left: 0; border-left: 0; }
-.p-resumo span { display: block; color: var(--suave); font-size: 12px; }
+.p-resumo {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 14px;
+  border: 1px solid var(--borda-forte);
+  border-left: 3px solid var(--cor-voo, var(--destaque));
+  border-radius: var(--raio);
+}
+.p-resumo div { padding: 8px 10px; border-left: 1px solid var(--borda); }
+.p-resumo div:first-child { border-left: 0; }
+.p-resumo span { display: block; color: var(--suave); font: 500 12px var(--cond); }
 .p-resumo strong {
   display: block;
   margin-top: 2px;
-  font-size: 19px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
+  font: 500 18px var(--mono);
+  letter-spacing: -0.3px;
   white-space: nowrap;
 }
 .p-resumo small { display: block; color: var(--suave); font-size: 12px; font-variant-numeric: tabular-nums; }
 
 /* Listas de dados */
-.p-mais h3 { margin: 22px 0 2px; font-size: 13px; font-weight: 600; }
+.p-mais h3 { margin: 22px 0 2px; font: 600 14px var(--cond); }
 .p-lista { margin: 0; }
 .p-lista div {
   display: flex;
@@ -591,7 +602,7 @@ body.com-alcance .aviso { top: calc(var(--nav) + var(--topo) + 60px); }
 /* ───────────────────────────── Painel do aeroporto ───────────────────────────── */
 .aero-icone svg { width: 24px; height: 24px; color: var(--texto); }
 .a-info { margin-top: 12px; }
-.a-titulo { display: flex; justify-content: space-between; margin: 18px 0 4px; font-size: 13px; font-weight: 600; }
+.a-titulo { display: flex; justify-content: space-between; margin: 18px 0 4px; font: 600 14px var(--cond); }
 .a-titulo span { color: var(--suave); font-weight: 400; font-variant-numeric: tabular-nums; }
 .a-voos { margin: 0; padding: 0; list-style: none; }
 .a-voos li {
@@ -640,7 +651,7 @@ body.com-alcance .aviso { top: calc(var(--nav) + var(--topo) + 60px); }
   max-height: calc(100% - 48px);
   padding: 20px 22px;
   border: 1px solid var(--borda);
-  border-radius: 10px;
+  border-radius: var(--raio);
   background: var(--superficie);
   color: var(--texto);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
@@ -676,13 +687,14 @@ body.com-alcance .aviso { top: calc(var(--nav) + var(--topo) + 60px); }
   box-shadow: var(--sombra);
 }
 body.com-painel .legenda { left: calc(var(--painel) + 12px); }
-.legenda-titulo { color: var(--suave); font-size: 12px; font-weight: 500; }
+.legenda-titulo { color: var(--suave); font: 500 12.5px var(--cond); }
 .legenda-corpo { flex: 1; }
 .legenda .escala-rotulos { font-size: 10px; margin-top: 3px; }
 
 /* ───────────────────────────── Leaflet ───────────────────────────── */
 .leaflet-container { background: var(--fundo-mapa); font: inherit; }
-.mapa-escurecido .leaflet-tile-pane { filter: brightness(0.72) contrast(1.08); } /* escurece o cinza da Esri */
+.mapa-escurecido .leaflet-tile-pane { filter: brightness(0.62) contrast(1.1) sepia(0.35) hue-rotate(140deg) saturate(1.4); } /* cinza da Esri puxado para o petróleo */
+.mapa-papel .leaflet-tile-pane { filter: sepia(0.28) saturate(0.9) brightness(0.99); }   /* cinza claro puxado para o papel */
 .leaflet-radar-pane { z-index: 350; pointer-events: none; }
 .leaflet-noite-pane { z-index: 300; pointer-events: none; }
 .leaflet-bottom { bottom: calc(var(--folga) + var(--base)); }
@@ -778,7 +790,7 @@ body.com-painel .legenda { left: calc(var(--painel) + 12px); }
     padding: 6px 16px calc(14px + var(--base));
     border-right: 0;
     border-top: 1px solid var(--borda);
-    border-radius: 12px 12px 0 0;
+    border-radius: 6px 6px 0 0;
     box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.18);
     transition: transform 0.2s ease-out;
     animation: subir 0.22s ease-out;

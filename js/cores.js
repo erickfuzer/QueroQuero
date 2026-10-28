@@ -2,17 +2,18 @@
 import { limitar } from './util.js';
 
 // Escala de cores por altitude (pés), uma para cada fundo
+// Escalas curtas e pouco saturadas, para o mapa não virar confete: do baixo (quente) ao alto (frio)
 export const ESCALAS = {
   escuro: [
-    [0, [255, 107, 74]], [5000, [255, 162, 58]], [10000, [255, 216, 74]], [20000, [126, 224, 108]],
-    [30000, [63, 208, 224]], [40000, [138, 125, 255]], [45000, [199, 125, 255]],
+    [0, [226, 132, 96]], [10000, [214, 190, 112]], [20000, [128, 202, 150]],
+    [30000, [104, 178, 214]], [40000, [160, 150, 222]], [45000, [160, 150, 222]],
   ],
   claro: [
-    [0, [232, 89, 12]], [5000, [240, 140, 0]], [10000, [214, 168, 0]], [20000, [47, 158, 68]],
-    [30000, [16, 152, 173]], [40000, [95, 61, 196]], [45000, [156, 54, 181]],
+    [0, [178, 78, 44]], [10000, [150, 112, 24]], [20000, [42, 122, 84]],
+    [30000, [30, 98, 152]], [40000, [92, 64, 152]], [45000, [92, 64, 152]],
   ],
 };
-const COR_SOLO = { escuro: 'rgb(125, 133, 144)', claro: 'rgb(120, 128, 140)' };
+const COR_SOLO = { escuro: 'rgb(122, 140, 146)', claro: 'rgb(120, 122, 130)' };
 
 export let tema = document.documentElement.getAttribute('data-tema') || 'escuro';   // tema da interface
 export let paleta = tema;                                                          // cores do desenho, conforme o fundo do mapa
@@ -35,10 +36,10 @@ export function corAltitude(alt, solo) {
 
 // Cores do desenho no canvas que mudam com o tema
 export const TINTAS = {
-  escuro: { contorno: 'rgba(0, 0, 0, 0.7)', halo: 'rgba(224, 87, 77, 0.95)', haloFundo: 'rgba(224, 87, 77, 0.16)', mouse: 'rgba(255, 255, 255, 0.1)',
-            militar: 'rgba(255, 255, 255, 0.95)', texto: 'rgba(232, 230, 225, 0.88)', textoForte: '#ffffff', textoFundo: 'rgba(21, 24, 28, 0.9)', icone: '#e8e6e1' },
-  claro: { contorno: 'rgba(0, 0, 0, 0.55)', halo: 'rgba(200, 56, 47, 0.95)', haloFundo: 'rgba(200, 56, 47, 0.1)', mouse: 'rgba(28, 31, 35, 0.07)',
-           militar: 'rgba(28, 31, 35, 0.95)', texto: 'rgba(28, 31, 35, 0.85)', textoForte: '#1c1f23', textoFundo: 'rgba(255, 255, 255, 0.92)', icone: '#1c1f23' },
+  escuro: { contorno: 'rgba(0, 0, 0, 0.75)', halo: 'rgba(230, 165, 60, 0.95)', haloFundo: 'rgba(230, 165, 60, 0.14)', mouse: 'rgba(219, 229, 227, 0.1)',
+            militar: 'rgba(230, 165, 60, 0.95)', texto: 'rgba(219, 229, 227, 0.9)', textoSuave: 'rgba(150, 172, 178, 0.9)', textoForte: '#f2c46e',
+            textoFundo: 'rgba(14, 20, 22, 0.9)', icone: '#dbe5e3', aeroporto: '#dbe5e3', aeroportoFundo: 'rgba(14, 20, 22, 0.9)' },
+  claro: { contorno: 'rgba(29, 43, 72, 0.6)', halo: 'rgba(168, 51, 111, 0.95)', haloFundo: 'rgba(168, 51, 111, 0.1)', mouse: 'rgba(29, 43, 72, 0.07)',
+           militar: 'rgba(168, 51, 111, 0.95)', texto: 'rgba(29, 43, 72, 0.9)', textoSuave: 'rgba(95, 106, 126, 0.95)', textoForte: '#a8336f',
+           textoFundo: 'rgba(247, 243, 232, 0.92)', icone: '#1d2b48', aeroporto: '#1d2b48', aeroportoFundo: 'rgba(247, 243, 232, 0.95)' },
 };
-TINTAS.escuro.aeroporto = '#e8e6e1'; TINTAS.escuro.aeroportoFundo = 'rgba(21, 24, 28, 0.9)';
-TINTAS.claro.aeroporto = '#1c1f23'; TINTAS.claro.aeroportoFundo = 'rgba(255, 255, 255, 0.95)';

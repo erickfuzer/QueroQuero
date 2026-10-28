@@ -89,7 +89,7 @@ export function montarEstilos() {
     const imagens = id === 'auto' ? ['claro', 'escuro'] : [id];
     for (const im of imagens) {
       mini.append(Object.assign(document.createElement('img'), {
-        src: bloco(im), alt: '', loading: 'lazy', className: ESTILOS[im].escurecer ? 'escurecida' : '',
+        src: bloco(im), alt: '', loading: 'lazy', className: ESTILOS[im].escurecer ? 'escurecida' : ESTILOS[im].papel ? 'papel' : '',
       }));
     }
     b.append(mini, Object.assign(document.createElement('span'), { textContent: id === 'auto' ? 'Segue o tema' : nome }));
@@ -238,6 +238,7 @@ function aplicarMapa() {
   }
   definirPaleta(ESTILOS[id].paleta);
   mapa.getContainer().classList.toggle('mapa-escurecido', !!ESTILOS[id].escurecer);
+  mapa.getContainer().classList.toggle('mapa-papel', !!ESTILOS[id].papel);
   const escala = ESCALAS[paleta].map(([alt, c]) => `rgb(${c.join(', ')}) ${(alt / ALT_SEM_LIMITE) * 100}%`).join(', ');
   document.documentElement.style.setProperty('--escala', `linear-gradient(90deg, ${escala})`);
   document.querySelectorAll('#estilos .estilo').forEach(b => b.setAttribute('aria-checked', String(b.dataset.estilo === prefs.mapa)));

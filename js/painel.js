@@ -171,6 +171,7 @@ export function preencherPainel() {
   if (!av) return;
   const agora = Date.now();
   const cor = corAltitude(av.alt, av.solo);
+  painel.style.setProperty('--cor-voo', cor);
   const forma = FORMAS[av.forma] || FORMAS.comercial;
 
   const icone = $('p-forma');

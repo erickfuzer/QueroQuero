@@ -23,7 +23,7 @@ const linkOsm = '&copy; <a href="https://www.openstreetmap.org/copyright" target
 export const ESTILOS = {
   escuro: { nome: 'Escuro', paleta: 'escuro', escurecer: true, max: 16,
             servicos: ['Canvas/World_Dark_Gray_Base', 'Canvas/World_Dark_Gray_Reference'], credito: `Mapa: ${linkEsri}, HERE, Garmin, ${linkOsm}` },
-  claro: { nome: 'Claro', paleta: 'claro', max: 16,
+  claro: { nome: 'Claro', paleta: 'claro', papel: true, max: 16,
            servicos: ['Canvas/World_Light_Gray_Base', 'Canvas/World_Light_Gray_Reference'], credito: `Mapa: ${linkEsri}, HERE, Garmin, ${linkOsm}` },
   satelite: { nome: 'Satélite', paleta: 'escuro', max: 18,
               servicos: ['World_Imagery', 'Reference/World_Boundaries_and_Places'], credito: `Imagens: ${linkEsri}, Maxar, Earthstar Geographics` },

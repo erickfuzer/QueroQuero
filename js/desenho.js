@@ -119,16 +119,34 @@ function desenhar() {
   const ocupados = [];
   ctx.lineWidth = 3;
   for (const r of pendentes) {
-    const caixa = { x1: r.x - 2, y1: r.y - 8, x2: r.x + ctx.measureText(r.texto).width + 2, y2: r.y + 8 };
+    ctx.font = '600 11px "IBM Plex Mono", ui-monospace, monospace';
+    const largura = Math.max(ctx.measureText(r.texto).width, r.nivel ? ctx.measureText(r.nivel).width : 0);
+    const caixa = { x1: r.x - 2, y1: r.y - (r.nivel ? 13 : 8), x2: r.x + largura + 2, y2: r.y + (r.nivel ? 13 : 8) };
     if (ocupados.some(o => caixa.x1 < o.x2 && caixa.x2 > o.x1 && caixa.y1 < o.y2 && caixa.y2 > o.y1)) continue;
     ocupados.push(caixa);
     ctx.globalAlpha = r.alfa;
+    const y = r.nivel ? r.y - 6 : r.y;
     ctx.strokeStyle = tinta.textoFundo;
-    ctx.strokeText(r.texto, r.x, r.y);
+    ctx.strokeText(r.texto, r.x, y);
     ctx.fillStyle = r.forte ? tinta.textoForte : tinta.texto;
-    ctx.fillText(r.texto, r.x, r.y);
+    ctx.fillText(r.texto, r.x, y);
+    if (r.nivel) {
+      ctx.font = '500 10px "IBM Plex Mono", ui-monospace, monospace';
+      ctx.strokeText(r.nivel, r.x, r.y + 7);
+      ctx.fillStyle = r.forte ? tinta.textoForte : tinta.textoSuave;
+      ctx.fillText(r.nivel, r.x, r.y + 7);
+    }
   }
   ctx.globalAlpha = 1;
+}
+
+// Nível de voo como na tela de radar: centenas de pés e a seta de subida ou descida
+function nivelDeVoo(av) {
+  if (av.solo) return 'SOLO';
+  if (av.alt == null) return '';
+  const seta = av.vertical > 300 ? '↑' : av.vertical < -300 ? '↓' : '';
+  if (prefs.altitude === 'm') return `${Math.round(av.alt * 0.3048 / 100) * 100} m${seta}`;
+  return String(Math.round(av.alt / 100)).padStart(3, '0') + seta;
 }
 
 function desenharAviao(av, pos, agora, centroLon, tam, tinta, destaque, rotulo, pendentes) {
@@ -194,7 +212,7 @@ function desenharAviao(av, pos, agora, centroLon, tam, tinta, destaque, rotulo, 
 
   if (rotulo) {
     const forte = destaque === 'selecionado';
-    pendentes.push({ texto: nomeDoVoo(av), x: p.x + (forte ? 26 : 16), y: p.y, forte, alfa: ctx.globalAlpha });
+    pendentes.push({ texto: nomeDoVoo(av), nivel: nivelDeVoo(av), x: p.x + (forte ? 26 : 16), y: p.y, forte, alfa: ctx.globalAlpha });
   }
   ctx.globalAlpha = 1;
 }
