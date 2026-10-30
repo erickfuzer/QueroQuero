@@ -10,7 +10,7 @@ Rastreador de voos em tempo real feito com **HTML, CSS e JavaScript puros**: avi
 ![Leaflet](https://img.shields.io/badge/Leaflet-199900?style=for-the-badge&logo=leaflet&logoColor=white)
 ![Cloudflare Workers](https://img.shields.io/badge/Cloudflare_Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
 
-<img src="assets/preview.png" alt="Mapa escuro de São Paulo com aviões coloridos pela altitude e o painel de um 777 da KLM chegando de Amsterdã, com foto, rota, progresso e rastro" width="760">
+<img src="assets/preview.png" alt="Mapa escuro de São Paulo com aviões coloridos pela altitude e o cartão de um 737 da Gol chegando de Salvador, com foto, rota, progresso e rastro" width="760">
 <br><br>
 
 [![Testar no navegador](https://img.shields.io/badge/▶_Testar_no_navegador-0B0F14?style=for-the-badge)](https://erickfuzer.github.io/QueroQuero/)
@@ -24,12 +24,12 @@ Rastreador de voos em tempo real feito com **HTML, CSS e JavaScript puros**: avi
 - **Ícone por tipo de aeronave**, com silhuetas desenhadas para o projeto: jato comercial, grande porte, quadrimotor, regional turboélice, executivo, aviação leve, helicópteros, planador, drone e balão. O caça tem a silhueta do **F-39 Gripen** e o transporte militar a do **KC-390**, em homenagem à aviação brasileira; **militares** ganham um contorno de destaque
 - Cor pela altitude, com legenda, e o **rastro** do voo selecionado colorido trecho a trecho
 - **Cinco mapas:** escuro, claro, satélite, relevo e ruas, independentes do tema da interface
-- **Camadas:** radar de chuva das últimas 2 horas (com animação), aeroportos, sombra de dia e noite e rastro de todos os aviões
+- **Camadas:** radar de chuva das últimas 2 horas (com animação), aeroportos, sombra de dia e noite e rastro de todas as aeronaves
 
-**No painel do voo**
-- Indicativo, companhia, tipo, altitude, velocidade, velocidade vertical, rumo, squawk (com alerta de emergência), posição, matrícula, modelo, código ICAO e país de registro
+**No cartão do voo**
+- Cartão flutuante sobre o mapa com indicativo, companhia, modelo, altitude, velocidade, velocidade vertical, rumo, squawk (com alerta de emergência), posição, matrícula, modelo, código ICAO e país de registro
 - **Foto da aeronave**, do Planespotters.net, com o crédito do fotógrafo
-- **Rota com progresso:** origem, destino, quanto já foi voado e quanto falta, só quando a rota cadastrada confere com a posição do avião; se não confere, o painel diz isso em vez de inventar
+- **Rota com progresso:** origem, destino, quanto já foi voado e quanto falta, só quando a rota cadastrada confere com a posição do avião; se não confere, o cartão diz isso em vez de inventar
 - **Seguir**, para o mapa acompanhar o avião, e **compartilhar**, com um link que abre o mapa já no voo
 
 **Aeroportos**
@@ -38,23 +38,23 @@ Rastreador de voos em tempo real feito com **HTML, CSS e JavaScript puros**: avi
 **Na barra**
 - **Busca** por indicativo, matrícula, código ICAO ou aeroporto, com atalho <kbd>/</kbd>
 - **Filtros** por tipo, companhia, situação (no ar ou em solo) e altitude, com atalhos para só militares, só helicópteros e emergências
-- **Preferências:** tema claro ou escuro (segue o sistema por padrão), pés ou metros, nós ou km/h e nomes dos voos no mapa, lembradas pelo navegador
-- **Relógio UTC (Zulu)**, o horário usado na aviação, e a situação da conexão ao vivo
+- **Preferências** (no menu ⋯, junto com o Sobre): tema claro ou escuro (segue o sistema por padrão), pés ou metros, nós ou km/h e nomes dos voos no mapa, lembradas pelo navegador
+- **Relógio UTC (Zulu)**, o horário usado na aviação, e a contagem de aeronaves na área, que muda de cor quando os dados atrasam ou a conexão cai
 
 **No dia a dia**
 - Abre na sua localização (com permissão) ou sobre São Paulo
 - Busca só a área visível e pausa quando a aba fica oculta; com o mapa afastado demais, mostra até onde as fontes alcançam
 - Avisos claros quando o limite gratuito estoura ou a fonte falha, com nova tentativa automática
-- **Celular:** o painel vira uma folha inferior que se arrasta para cima para ver tudo
+- **Celular:** o cartão vira uma folha inferior que se arrasta para cima para ver tudo
 
 <details>
 <summary>Ver no satélite, no tema claro e no celular</summary>
 <br>
-<img src="assets/preview-satelite.png" alt="Mapa de satélite de São Paulo com radar de chuva, aeroportos e o painel de Guarulhos com os voos chegando e saindo" width="760">
+<img src="assets/preview-satelite.png" alt="Mapa de satélite de São Paulo com radar de chuva, aeroportos e o cartão de Guarulhos com os voos chegando e saindo" width="760">
 <br><br>
-<img src="assets/preview-claro.png" alt="O mesmo voo no tema claro, com o painel aberto" width="760">
+<img src="assets/preview-claro.png" alt="O mesmo voo no tema claro, com o cartão aberto" width="760">
 <br><br>
-<img src="assets/preview-mobile.png" alt="Versão mobile com o painel do voo como folha inferior compacta e o avião selecionado acima dela" width="260">
+<img src="assets/preview-mobile.png" alt="Versão mobile com o cartão do voo como folha inferior compacta e o avião selecionado acima dela" width="260">
 </details>
 
 ## Como funciona
