@@ -42,7 +42,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="mapa" aria-label="Mapa com os aviões"></div>
+  <div id="mapa" aria-label="Mapa com as aeronaves"></div>
 
   <!-- Navbar: marca, busca, situação ao vivo, filtros, tema e código-fonte -->
   <header class="navbar">
@@ -88,10 +88,7 @@
     </div>
 
     <div class="nav-acoes">
-      <div id="status" class="status carregando">
-        <span class="ponto" aria-hidden="true"></span>
-        <span id="status-texto">Conectando…</span>
-      </div>
+      <div id="status" class="status carregando" role="status"><span id="status-texto">Conectando…</span></div>
       <span id="relogio" class="relogio" title="Hora UTC (Zulu), a usada na aviação">--:--Z</span>
       <span class="divisor" aria-hidden="true"></span>
       <button id="bt-mapa" class="botao" type="button" aria-expanded="false" aria-controls="mapas">
@@ -103,15 +100,9 @@
         <span class="rotulo">Filtros</span>
         <span id="filtros-ativos" class="selo" hidden></span>
       </button>
-      <button id="bt-prefs" class="botao icone" type="button" aria-expanded="false" aria-controls="prefs" title="Preferências" aria-label="Preferências">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.6-2-3.4-2.4 1a7.5 7.5 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5A7.5 7.5 0 0 0 7 6.5l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 3l-2 1.6 2 3.4 2.4-1a7.5 7.5 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.5 7.5 0 0 0 2.6-1.5l2.4 1 2-3.4z"/></svg>
+      <button id="bt-prefs" class="botao icone" type="button" aria-expanded="false" aria-controls="prefs" title="Preferências e sobre" aria-label="Preferências e sobre">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.5" cy="12" r="1.5" class="cheio"/><circle cx="12" cy="12" r="1.5" class="cheio"/><circle cx="18.5" cy="12" r="1.5" class="cheio"/></svg>
       </button>
-      <button id="bt-sobre" class="botao icone sobre" type="button" title="Sobre o Quero-Quero" aria-label="Sobre o Quero-Quero" aria-haspopup="dialog">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r="1.1" class="cheio"/></svg>
-      </button>
-      <a class="botao icone codigo-fonte" href="https://github.com/erickfuzer/QueroQuero" target="_blank" rel="noopener" title="Código-fonte no GitHub" aria-label="Código-fonte no GitHub">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="cheio" d="M12 2.5a9.5 9.5 0 0 0-3 18.5c.5.1.7-.2.7-.5v-1.7c-2.7.6-3.2-1.2-3.2-1.2-.4-1.1-1.1-1.4-1.1-1.4-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.8.1-.6.3-1.1.6-1.3-2.1-.2-4.4-1.1-4.4-4.7 0-1 .4-1.9 1-2.6-.1-.2-.4-1.2.1-2.5 0 0 .8-.3 2.6 1a9 9 0 0 1 4.8 0c1.8-1.3 2.6-1 2.6-1 .5 1.3.2 2.3.1 2.5.6.7 1 1.6 1 2.6 0 3.7-2.3 4.5-4.4 4.7.3.3.6.9.6 1.8v2.6c0 .3.2.6.7.5A9.5 9.5 0 0 0 12 2.5z"/></svg>
-      </a>
     </div>
 
     <!-- Mapa: estilo do mapa base e camadas sobrepostas -->
@@ -123,7 +114,7 @@
         <label class="opcao"><span><b>Radar de chuva</b><small>Últimas 2 horas, do RainViewer</small></span><input id="cam-radar" type="checkbox" role="switch"></label>
         <label class="opcao"><span><b>Aeroportos</b><small>Clique num aeroporto para ver chegadas e partidas</small></span><input id="cam-aeroportos" type="checkbox" role="switch"></label>
         <label class="opcao"><span><b>Dia e noite</b><small>Sombra onde já é noite agora</small></span><input id="cam-noite" type="checkbox" role="switch"></label>
-        <label class="opcao"><span><b>Rastro de todos os aviões</b><small>Não só do voo selecionado</small></span><input id="cam-rastros" type="checkbox" role="switch"></label>
+        <label class="opcao"><span><b>Rastro de todas as aeronaves</b><small>Não só do voo selecionado</small></span><input id="cam-rastros" type="checkbox" role="switch"></label>
       </div>
     </section>
 
@@ -185,7 +176,10 @@
         <button type="button" role="radio" data-valor="sempre">Sempre</button>
         <button type="button" role="radio" data-valor="nunca">Nunca</button>
       </div>
-      <button id="link-sobre" class="link link-sobre" type="button">Sobre o Quero-Quero</button>
+      <div class="pop-rodape">
+        <button id="link-sobre" class="link" type="button">Sobre o Quero-Quero</button>
+        <a class="link" href="https://github.com/erickfuzer/QueroQuero" target="_blank" rel="noopener">Código-fonte no GitHub</a>
+      </div>
     </section>
   </header>
 
@@ -198,12 +192,21 @@
     <button id="bt-aproximar" class="link" type="button">Aproximar</button>
   </div>
 
-  <!-- Dica ao passar o mouse sobre um avião -->
+  <!-- Dica ao passar o mouse sobre uma aeronave -->
   <div id="dica" class="dica" hidden></div>
 
-  <!-- Painel do voo selecionado (folha inferior arrastável no celular) -->
+  <!-- Cartão do voo selecionado (folha inferior arrastável no celular) -->
   <aside id="painel" class="painel" aria-label="Detalhes do voo" hidden>
     <div class="alca" aria-hidden="true"></div>
+
+    <!-- Foto da aeronave (Planespotters.net), com crédito do fotógrafo -->
+    <figure id="p-foto" class="p-foto" hidden>
+      <a id="p-foto-link" class="p-foto-imagem" target="_blank" rel="noopener">
+        <img id="p-foto-img" alt="" decoding="async">
+      </a>
+      <figcaption><a id="p-foto-credito" target="_blank" rel="noopener"></a></figcaption>
+    </figure>
+
     <header class="p-cab">
       <div class="p-icone" aria-hidden="true">
         <svg viewBox="-16 -16 32 32"><path id="p-forma"/></svg>
@@ -211,9 +214,10 @@
       <div class="p-titulo">
         <h2 id="p-indicativo">–</h2>
         <p id="p-subtitulo"></p>
+        <p id="p-meta" class="p-meta"></p>
       </div>
       <div class="p-botoes">
-        <button id="bt-seguir" class="botao icone" type="button" aria-pressed="false" title="Seguir o avião" aria-label="Seguir o avião">
+        <button id="bt-seguir" class="botao icone" type="button" aria-pressed="false" title="Seguir a aeronave" aria-label="Seguir a aeronave">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6.5"/><circle cx="12" cy="12" r="2" class="cheio"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/></svg>
         </button>
         <button id="bt-compartilhar" class="botao icone" type="button" title="Compartilhar este voo" aria-label="Compartilhar este voo">
@@ -225,25 +229,16 @@
       </div>
     </header>
 
-    <!-- Foto da aeronave (Planespotters.net), com crédito do fotógrafo -->
-    <figure id="p-foto" class="p-foto" hidden>
-      <a id="p-foto-link" class="p-foto-imagem" target="_blank" rel="noopener">
-        <img id="p-foto-img" alt="" decoding="async">
-      </a>
-      <figcaption><a id="p-foto-credito" target="_blank" rel="noopener"></a></figcaption>
-    </figure>
-
     <div id="p-etiquetas" class="p-etiquetas"></div>
     <section id="p-rota" class="p-rota" aria-label="Rota"></section>
 
-    <section class="p-resumo" aria-label="Resumo do voo">
-      <div><span>Altitude</span><strong id="p-altitude">–</strong><small id="p-altitude-2"></small></div>
-      <div><span>Velocidade</span><strong id="p-velocidade">–</strong><small id="p-velocidade-2"></small></div>
-      <div><span>Vel. vertical</span><strong id="p-vertical">–</strong><small id="p-vertical-2"></small></div>
-    </section>
+    <dl class="p-lista p-agora" aria-label="Situação do voo">
+      <div><dt>Altitude</dt><dd><b id="p-altitude">–</b><small id="p-altitude-2"></small></dd></div>
+      <div><dt>Velocidade</dt><dd><b id="p-velocidade">–</b><small id="p-velocidade-2"></small></dd></div>
+      <div><dt>Vel. vertical</dt><dd><b id="p-vertical">–</b><small id="p-vertical-2"></small></dd></div>
+    </dl>
 
     <div class="p-mais">
-      <h3>Voo</h3>
       <dl class="p-lista">
         <div><dt>Rumo</dt><dd id="p-rumo">–</dd></div>
         <div><dt>Squawk</dt><dd id="p-squawk">–</dd></div>
@@ -260,7 +255,7 @@
     </div>
   </aside>
 
-  <!-- Painel do aeroporto: chegadas e partidas dos voos na área -->
+  <!-- Cartão do aeroporto: chegadas e partidas dos voos na área -->
   <aside id="painel-aero" class="painel painel-aero expandida" aria-label="Detalhes do aeroporto" hidden>
     <header class="p-cab">
       <div class="p-icone aero-icone" aria-hidden="true">
@@ -304,7 +299,7 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>
       </button>
     </header>
-    <p>Rastreador de voos em tempo real feito com HTML, CSS e JavaScript puros, sem framework e sem etapa de build. Os aviões chegam a cada 10 segundos e se movem de forma contínua entre uma atualização e outra.</p>
+    <p>Rastreador de voos em tempo real feito com HTML, CSS e JavaScript puros, sem framework e sem etapa de build. As aeronaves chegam a cada 10 segundos e se movem de forma contínua entre uma atualização e outra.</p>
     <h3>Fontes</h3>
     <ul>
       <li><b>Voos:</b> <a href="https://adsb.fi" target="_blank" rel="noopener">adsb.fi</a>, com <a href="https://airplanes.live" target="_blank" rel="noopener">airplanes.live</a> e <a href="https://adsb.lol" target="_blank" rel="noopener">adsb.lol</a> de reserva, redes de receptores voluntários de ADS-B</li>

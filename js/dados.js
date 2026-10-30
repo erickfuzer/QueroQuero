@@ -129,7 +129,7 @@ function definirConexao(estado) {
   $('status').className = 'status ' + (estado === 'ok' ? '' : estado);
 }
 
-// Rodapé: quantos aviões e há quanto tempo veio o último dado
+// Navbar: quantas aeronaves; o tempo desde o último dado só aparece quando ele atrasa
 export function atualizarStatus() {
   const agora = Date.now();
   let total = 0, visiveis = 0;
@@ -142,10 +142,13 @@ export function atualizarStatus() {
   if (estadoConexao === 'carregando') { el.textContent = 'Conectando…'; return; }
   if (estadoConexao === 'erro' && !ultimoSucesso) { el.textContent = 'Sem conexão com os dados'; return; }
   const filtrando = altMin > 0 || altMax < ALT_SEM_LIMITE || gruposOcultos.size > 0 || situacao !== 'todos' || soEmergencia || companhiasSel.size > 0;
-  let linha = filtrando ? `${num(visiveis)} de ${num(total)} aviões` : `${num(total)} ${total === 1 ? 'avião' : 'aviões'}`;
+  let linha = filtrando ? `${num(visiveis)} de ${num(total)} aeronaves` : `${num(total)} ${total === 1 ? 'aeronave' : 'aeronaves'}`;
   const s = Math.round((agora - ultimoSucesso) / 1000);
-  linha += estadoConexao === 'erro' ? ' · reconectando' : s < 2 ? ' · ao vivo' : ` · há ${s} s`;
+  const atrasado = estadoConexao !== 'erro' && s >= 25;
+  if (estadoConexao === 'erro') linha += ' · reconectando';
+  else if (atrasado) linha += ` · atualizado há ${s} s`;
   el.textContent = linha;
+  $('status').classList.toggle('atrasado', atrasado);
   $('status').title = raioLimitado ? 'Mostrando um raio de 250 milhas náuticas a partir do centro do mapa' : '';
 }
 setInterval(() => { if (!document.hidden) atualizarStatus(); }, 1000);

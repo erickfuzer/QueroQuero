@@ -212,7 +212,6 @@ setInterval(atualizarRelogio, 1000);
 // Janela "Sobre"
 const sobre = $('sobre');
 const abrirSobre = () => { fecharPopovers(); sobre.showModal(); };
-$('bt-sobre').addEventListener('click', abrirSobre);
 $('link-sobre').addEventListener('click', abrirSobre);
 $('bt-fechar-sobre').addEventListener('click', () => sobre.close());
 sobre.addEventListener('click', e => { if (e.target === sobre) sobre.close(); });
@@ -221,7 +220,7 @@ sobre.addEventListener('click', e => { if (e.target === sobre) sobre.close(); })
 export function aplicarTema() {
   definirTema(prefs.tema === 'auto' ? (temaSistema.matches ? 'escuro' : 'claro') : prefs.tema);
   document.documentElement.setAttribute('data-tema', tema);
-  document.querySelector('meta[name="theme-color"]').content = tema === 'escuro' ? '#15181c' : '#ffffff';
+  document.querySelector('meta[name="theme-color"]').content = tema === 'escuro' ? '#0e1416' : '#f7f3e8';
   montarTipos();
   marcarPrefs();
   aplicarMapa();

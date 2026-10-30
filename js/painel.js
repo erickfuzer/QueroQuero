@@ -46,10 +46,10 @@ $('bt-fechar').addEventListener('click', fecharPainel);
 const painelAero = $('painel-aero');
 const painelAberto = () => !painel.hidden ? painel : !painelAero.hidden ? painelAero : null;
 
-// No celular o painel é uma folha inferior: os controles do rodapé sobem junto
+// No celular o cartão é uma folha inferior: os controles do rodapé sobem junto
 export function medirFolha() {
   const aberto = painelAberto();
-  const altura = aberto && celular.matches ? aberto.offsetHeight : 0;
+  const altura = aberto && celular.matches ? aberto.offsetHeight + 8 : 0;   // + a margem da folha
   document.documentElement.style.setProperty('--folga', altura + 'px');
 }
 new ResizeObserver(medirFolha).observe(painel);
@@ -58,14 +58,14 @@ celular.addEventListener('change', medirFolha);
 
 // Área do mapa que não fica escondida atrás do painel
 function areaLivre() {
-  // O mapa começa abaixo da navbar; no computador o painel ocupa a lateral esquerda
+  // O mapa começa abaixo da navbar; no computador o cartão flutua à esquerda
   const tam = mapa.getSize();
   const topo = 8;
   const aberto = painelAberto();
   if (!aberto) return { x1: 0, y1: topo, x2: tam.x, y2: tam.y };
   return celular.matches
     ? { x1: 0, y1: topo, x2: tam.x, y2: tam.y - aberto.offsetHeight }
-    : { x1: aberto.offsetWidth + 12, y1: topo, x2: tam.x - 60, y2: tam.y - 50 };
+    : { x1: aberto.getBoundingClientRect().right + 12, y1: topo, x2: tam.x - 60, y2: tam.y - 50 };
 }
 
 // Se o avião ficou atrás do painel, move o mapa para ele aparecer
@@ -182,12 +182,13 @@ export function preencherPainel() {
   texto('p-indicativo', nomeDoVoo(av));
   const rota = rotas.get(av.indicativo.toUpperCase());
   const companhia = rota && !(rota instanceof Promise) ? rota.companhia : null;
-  texto('p-subtitulo', companhia || av.descricao || av.tipo || '');
+  texto('p-subtitulo', companhia || av.descricao || av.tipo || forma.nome);
+  texto('p-meta', [av.tipo, av.matricula].filter(Boolean).join(' · '));
+  $('p-forma').closest('.p-icone').title = av.semCategoria ? 'Tipo não informado' : forma.nome;
 
-  // Etiquetas: militar, tipo e emergência
+  // Etiquetas só para o que pede atenção: militar e emergência
   const etiquetas = [];
   if (av.militar) etiquetas.push(['Militar', 'militar']);
-  etiquetas.push([av.semCategoria ? 'Tipo não informado' : forma.nome, '']);
   if (EMERGENCIAS[av.squawk]) etiquetas.push([EMERGENCIAS[av.squawk], 'alerta']);
   $('p-etiquetas').replaceChildren(...etiquetas.map(([t, c]) => Object.assign(document.createElement('span'), { className: 'etiqueta ' + c, textContent: t })));
 
@@ -293,7 +294,7 @@ function mostrarRota(av) {
   if (rota instanceof Promise) return;
   if (!rota || !rota.origem || !rota.destino) return semRota('Rota não disponível para este voo.');
   const conta = rotaConfere(av, rota);
-  if (!conta) return semRota('Rota não disponível: a cadastrada para este indicativo não confere com a posição do avião.');
+  if (!conta) return semRota('Rota não disponível: a cadastrada para este indicativo não confere com a posição da aeronave.');
   const { origem: o, destino: d } = rota;
   const { feito, falta, fracao } = conta;
 
